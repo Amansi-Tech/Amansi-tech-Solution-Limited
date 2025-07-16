@@ -1,4 +1,23 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Background shimmer animation */
+@keyframes slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-slide {
+  animation: slide 6s linear infinite;
+}
+
+
 
 :root {
   --background: #ffffff;

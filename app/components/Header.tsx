@@ -17,8 +17,8 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/80 shadow backdrop-blur' : 'bg-transparent'
+      className={`sticky top-0 z-50 transition-all duration-300  ${
+        scrolled ? 'bg-white/60 shadow backdrop-blur text-white' : 'bg-violet-600 pt-[1px] pb-[1px] text-white'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between m-2">
@@ -26,16 +26,16 @@ export default function Header() {
         <div className="text-xl font-bold">Amansi-tech</div>
 
         <nav className="hidden md:flex space-x-6 font-medium">
-          <Link href="#" className="hover:text-violet-600 transition font-bold">Home</Link>
-          <Link href="#" className="hover:text-violet-600 transition font-bold">About</Link>
-          <Link href="#" className="hover:text-violet-600 transition font-bold">Services</Link>
-          <Link href="#" className="hover:text-violet-600 transition font-bold">Training</Link>
-          <Link href="#" className="hover:text-violet-600 transition font-bold">Projects</Link>
+          <Link href="#" className="hover:text-gray-200 transition font-bold">Home</Link>
+          <Link href="#" className="hover:text-gray-200 transition font-bold">About</Link>
+          <Link href="#" className="hover:text-gray-200 transition font-bold">Services</Link>
+          <Link href="#" className="hover:text-gray-200 transition font-bold">Training</Link>
+          <Link href="#" className="hover:text-gray-200 transition font-bold">Projects</Link>
         </nav>
 
         <div className="hidden md:block">
           <Link href="#">
-            <button className="bg-violet-600 text-white px-4 py-2 rounded hover:bg-violet-800 transition">
+            <button className="bg-white text-violet-600 font-bold px-4 py-2 rounded hover:bg-gray-100 transition">
               Get in touch
             </button>
           </Link>
@@ -53,11 +53,11 @@ export default function Header() {
       {menuOpen && (
         <div className="md:hidden px-4 pb-4">
           <nav className="flex flex-col gap-3 font-medium">
-            <Link href="#" className="hover:text-violet-600 transition">Home</Link>
-            <Link href="#" className="hover:text-violet-600 transition">About</Link>
-            <Link href="#" className="hover:text-violet-600 transition">Services</Link>
-            <Link href="#" className="hover:text-violet-600 transition">Training</Link>
-            <Link href="#" className="hover:text-violet-600 transition">Projects</Link>
+            <Link href="#" className="hover:text-gray-600 transition">Home</Link>
+            <Link href="#" className="hover:text-gray-600 transition">About</Link>
+            <Link href="#" className="hover:text-gray-600 transition">Services</Link>
+            <Link href="#" className="hover:text-gray-600 transition">Training</Link>
+            <Link href="#" className="hover:text-gray-600 transition">Projects</Link>
             <Link href="#">
               <button className="mt-2 text-violet-600 text-white px-4 py-2 rounded hover:violet-700 transition w-full text-left">
                 Get in touch
