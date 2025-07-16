@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@types/aos": "^3.0.7",
     "aos": "^2.3.4",
     "framer-motion": "^12.23.3",
     "lucide-react": "^0.525.0",
@@ -16,11 +17,16 @@
     "react-dom": "^19.0.0",
     "react-simple-typewriter": "^5.0.1"
   },
-
-  "extends": ["next", "next/core-web-vitals"],
-"rules": { "react/no-unescaped-entities": "off" 
-},
-
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "react/jsx-uses-react": "error",
+    "react/jsx-uses-vars": "error"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
@@ -44,26 +50,13 @@
       "jsx": true
     }
   },
-  "plugins": ["react", "react-hooks"],
-  
-  "extends": [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
+  "plugins": [
+    "react",
+    "react-hooks"
   ],
-  "rules": {
-    "react/no-unescaped-entities": "off",
-    "react/jsx-uses-react": "error",
-    "react/jsx-uses-vars": "error"
-  },
   "settings": {
     "react": {
       "version": "detect"
     }
   }
 }
-
-
-
-
-
