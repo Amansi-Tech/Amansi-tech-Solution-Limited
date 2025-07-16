@@ -1,17 +1,16 @@
 'use client';
+import { Typewriter } from 'react-simple-typewriter'
 
-import { motion, useAnimationControls } from 'framer-motion';
 
-
-import 'aos/dist/aos.css';
-import AOS from 'aos';
 import { useEffect } from 'react';
+import 'aos/dist/aos.css';
+import  AOS  from 'aos';
 
 export default function Hero() {
- useEffect(() => {
+  useEffect(() => {
     AOS.init({
-      duration: 900, 
-      once: true,    
+      duration: 900,
+      once: true,
     });
   }, []);
   return (
@@ -26,17 +25,48 @@ export default function Hero() {
           muted
           playsInline
         />
-         <div className="absolute inset-0 bg-black/40 z-0"></div>
+        <div className="absolute inset-0 bg-black/40 z-0"></div>
 
-      <div className="relative z-10 flex items-center justify-center h-full text-center px-4 mt[-4rem]">
-        <div className="text-white">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 " data-aos="zoom-out">Welcome to <span className="" data-aos="fade-up-left"> Amansi Tech</span></h1>
-          <p className="text-lg md:text-xl mb-6" data-aos="fade-up-right">Where imagination becomes reality through programing.</p>
-          <button className="bg-violet-600 hover:bg-violet-700 px-6 py-3 rounded text-white font-semibold" data-aos="fade-right">
-            Contact us
-          </button>
+        <div className="relative z-10 flex items-center justify-center h-full text-center p-[10px] mt[-4rem]">
+          <div className="text-white">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 " data-aos="zoom-out">Welcome to <span className="" data-aos="fade-up-left"> Amansi Tech</span></h1>
+            <p className="text-lg md:text-xl mb-6 text-white" data-aos="fade-up-right">
+              <span className="relative">
+                <span className="absolute inset-0 text-gray-600 blur-sm -z-10">
+                  <Typewriter
+                    words={[
+                      'Where imagination becomes reality through programing.',
+                      'In Amansi-Tech we think into the future',
+                      'Come code with us fun and slick',
+                    ]}
+                    loop={true}
+                    cursor
+                    typeSpeed={150}
+                    deleteSpeed={150}
+                    delaySpeed={1250}
+                  />
+                </span>
+                <Typewriter
+                  words={[
+                    'Where imagination becomes reality.',
+                    'We think into the future',
+                    'Come code with us fun and exilirating',
+                  ]}
+                  loop={true}
+                  cursor
+                  typeSpeed={100}
+                  deleteSpeed={100}
+                  delaySpeed={90}
+                />
+              </span>
+            </p>
+
+            {/* <p className="text-lg md:text-xl mb-6" data-aos="fade-up-right">Where imagination becomes reality through programing.</p> */}
+            <button className="bg-violet-600 hover:bg-violet-700 px-6 py-3 rounded text-white font-semibold" data-aos="fade-right">
+              Contact us
+            </button>
+          </div>
         </div>
-      </div>
       </section>
     </div>
   );

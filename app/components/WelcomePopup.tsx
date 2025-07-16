@@ -23,50 +23,71 @@ const WelcomePopup = () => {
     <AnimatePresence>
       {showPopup && (
         <>
-          {/* Overlay Blur */}
+
           <motion.div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 2 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
 
-          {/* Popup */}
+
+          <motion.div
+            className="fixed top-[10%] left-[10%] w-[30vw] h-[30vw] bg-violet-300/30 rounded-full blur-3xl z-30 animate-pulse"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            transition={{ duration: 2 }}
+          />
+
+
           <motion.div
             initial={{ opacity: 0, y: -60 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -60 }}
-            transition={{ duration: 0.9 }}
-            className="fixed ml-[44rem] m-[15rem] -translate-x-1/2 z-50 bg-white text-black p-5 sm:p-6 rounded-2xl border border-violet-500 shadow-xl w-[100%] max-w-lg"
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+            className="fixed top-[21rem] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white dark:bg-zinc-900 text-black dark:text-white p-6 sm:p-8 rounded-2xl border border-violet-500 shadow-2xl w-[90vw] max-w-5xl"
           >
-            <button onClick={closePopup} className="text-gray-500 hover:text-gray-700">
-              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+
+            <button
+              onClick={closePopup}
+              className="absolute top-4 right-4 text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition"
+            >
+              <X className="w-6 h-6 text-violet-600" />
             </button>
 
-            <div className=" justify-between items-start gap-4 p-[23px]">
 
-              <h1 className="text-violet-600 font-bold pb-[3px]">Amansi-tech web team</h1>
-              <hr className='w-[20rem] pb-[3px]' />
-              <div className='flex g-[10px] items-center justify-center'>
-                <div>
-                  <p className="text-sm sm:text-base font-medium leading-relaxed text-black">
-                    Saw your 'IP address' and decided to welcome you
-                  </p>
-                </div>
-                <div className="flex gap-3 items-start">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="w-full md:w-1/2">
+                <video
+                  className="w-full h-auto rounded-xl shadow-lg"
+                  src="/welcomepup.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+              </div>
+
+              <div className="w-full md:w-1/2 space-y-3">
+                <h1 className="text-violet-700 dark:text-violet-400 text-xl md:text-2xl font-bold">
+                  Amansi-tech Web Team
+                </h1>
+                <hr className="border-violet-400 dark:border-violet-600 w-full" />
+                <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base leading-relaxed">
+                  Saw your <span className="font-semibold">IP address</span> and decided to welcome you personally.
+                </p>
+                <div className="flex items-center gap-2">
                   <motion.span
                     animate={{ rotate: [0, 10, -10, 30, 0] }}
-                    transition={{ repeat: 100, duration: 1.7 }}
-                    className="text-2xl sm:text-3xl"
+                    transition={{ repeat: Infinity, duration: 1.7 }}
+                    className="text-2xl md:text-3xl"
                   >
                     👋
                   </motion.span>
-                  <div>
-                  </div>
+                  <span className="text-gray-600 dark:text-gray-400">We're glad you're here!</span>
                 </div>
               </div>
-
-
             </div>
           </motion.div>
         </>

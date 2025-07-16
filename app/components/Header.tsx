@@ -22,16 +22,27 @@ export default function Header() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between m-2">
-        {/* Logo */}
+        
         <div className="text-xl font-bold">Amansi-tech</div>
 
-        <nav className="hidden md:flex space-x-6 font-medium">
-          <Link href="#" className="hover:text-gray-200 transition font-bold">Home</Link>
-          <Link href="#" className="hover:text-gray-200 transition font-bold">About</Link>
-          <Link href="#" className="hover:text-gray-200 transition font-bold">Services</Link>
-          <Link href="#" className="hover:text-gray-200 transition font-bold">Training</Link>
-          <Link href="#" className="hover:text-gray-200 transition font-bold">Projects</Link>
-        </nav>
+       <nav className="hidden md:flex space-x-6 font-medium">
+  <Link href="#" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
+    Home
+  </Link>
+  <Link href="/About" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
+    About
+  </Link>
+  <Link href="#" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
+    Services
+  </Link>
+  <Link href="#" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
+    Training
+  </Link>
+  <Link href="#" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
+    Projects
+  </Link>
+</nav>
+
 
         <div className="hidden md:block">
           <Link href="#">
