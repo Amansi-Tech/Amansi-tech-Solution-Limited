@@ -16,14 +16,23 @@ function Circle({ cfg, inView }: { cfg: CircleCfg; inView: boolean }) {
   const size = 120, stroke = 8, r = size / 2 - stroke / 2;
   const c = 2 * Math.PI * r, o = c - (p / 100) * c;
 
-  useEffect(() => {
-    let t: number | undefined;
-    if (inView) {
-      setP(0);
-      t = window.setInterval(() => setP((x) => (x >= end ? end : x + 1)), speed);
+const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+useEffect(() => {
+  if (inView) {
+    setP(0);
+    intervalRef.current = window.setInterval(() => {
+      setP(x => (x >= end ? end : x + 1));
+    }, speed);
+  }
+  
+  return () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
-    return () => t && clearInterval(t);
-  }, [inView, speed, end]);
+  };
+}, [inView, speed, end]);
 
   return (
     <motion.div
