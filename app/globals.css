@@ -33,13 +33,75 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #0a0a0aff;
     --foreground: #ededed;
   }
 }
 
 body {
-  background: var(--background);
+  background:linear-gradient(rgba(114, 33, 219, 0.712),rgba(78, 42, 240, 0.66)) ;
+  background-size: contain;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+@layer components {
+  .subheading {
+    @apply relative text-center text-2xl font-semibold text-violet-600 my-8 ;
+  }
+  /* lines on each side */
+  .subheading::before,
+  .subheading::after {
+    content: '';
+    @apply inline-block border-t-2 border-violet-500 flex-1 max-w-[150px] mx-4;
+  }
+  /* entrance fade-in & slight upward movement */
+  .subheading {
+    @apply opacity-1 translate-y-4 bg-violet-500 motion-safe:animate-[fadeInUp_0.8s_ease-out];
+  }
+  @keyframes fadeInUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  /* hover animated underline using after-element */
+  .subheading.group:hover::after {
+    @apply border-violet-600;
+  }
+  .subheading.group::after {
+    @apply content-[''] absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-1 bg-gradient-to-r from-violet-400 to-violet-600 transition-all duration-500;
+  }
+  .subheading.group:hover::after {
+    @apply w-full;
+  }
+}
+@layer components {
+  .star-container {
+    /* Centered layout */
+  }
+  .star-wrapper {
+    @apply text-yellow-500 text-4xl inline-block;
+    animation: float-star 6s ease-in-out infinite;
+    display: inline-block;
+  }
+  .first-stars {
+    animation-delay: -0.5s;
+    animation-name: float-and-flip;
+  }
+}
+
+@keyframes float-star {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(0deg);
+  }
+}
+
+@keyframes float-and-flip {
+  0%, 100% {
+    transform: translateY(0) rotate(180deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+

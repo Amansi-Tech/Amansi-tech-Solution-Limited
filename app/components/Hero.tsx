@@ -1,7 +1,7 @@
 'use client';
 import { Typewriter } from 'react-simple-typewriter'
-
-
+import Services from './Services';
+import Link from 'next/link';
 import { useEffect } from 'react';
 import 'aos/dist/aos.css';
 import  AOS  from 'aos';
@@ -36,21 +36,21 @@ export default function Hero() {
                   <Typewriter
                     words={[
                       'Where imagination becomes reality through programing.',
-                      'In Amansi-Tech we think into the future',
-                      'Come code with us fun and slick',
+                      'In Amansi-Tech we think towards the future',
+                      'Come and code with us fun and slick',
                     ]}
                     loop={true}
                     cursor
-                    typeSpeed={150}
-                    deleteSpeed={150}
-                    delaySpeed={1250}
+                    typeSpeed={100}
+                    deleteSpeed={100}
+                    delaySpeed={1900}
                   />
                 </span>
                 <Typewriter
                   words={[
-                    'Where imagination becomes reality.',
-                    'We think into the future',
-                    'Come code with us fun and exilirating',
+                    'Where imagination becomes reality through programing.',
+                    'In Amansi-Tech we think towards the future',
+                    'Come and code with us fun and slick',
                   ]}
                   loop={true}
                   cursor
@@ -62,12 +62,17 @@ export default function Hero() {
             </p>
 
             {/* <p className="text-lg md:text-xl mb-6" data-aos="fade-up-right">Where imagination becomes reality through programing.</p> */}
+            <Link
+            href='/Contact'
+            >
             <button className="bg-violet-600 hover:bg-violet-700 px-6 py-3 rounded text-white font-semibold" data-aos="fade-right">
               Contact us
             </button>
+            </Link>
           </div>
         </div>
       </section>
+ <Services />
     </div>
   );
 }
