@@ -19,7 +19,10 @@ const CIRCLES: CircleCfg[] = [
 function Circle({ cfg, inView }: { cfg: CircleCfg; inView: boolean }) {
   const { label, speed, end, colors } = cfg;
   const [p, setP] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+ const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+
 
   const size = 120;
   const stroke = 8;
@@ -27,23 +30,22 @@ function Circle({ cfg, inView }: { cfg: CircleCfg; inView: boolean }) {
   const circumference = 2 * Math.PI * r;
   const offset = circumference - (p / 100) * circumference;
 
-  useEffect(() => {
-    if (inView) {
-      // clear any existing interval
-      if (intervalRef.current) clearInterval(intervalRef.current);
-
-      setP(0);
-      intervalRef.current = window.setInterval(() => {
-        setP(x => (x >= end ? end : x + 1));
-      }, speed);
+useEffect(() => {
+  if (inView) {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setP(0);
+    intervalRef.current = setInterval(() => {
+      setP(x => (x >= end ? end : x + 1));
+    }, speed);
+  }
+  return () => {
+    if (intervalRef.current !== null) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [inView, speed, end]);
+  };
+}, [inView, speed, end]);
+
 
   return (
     <motion.div
