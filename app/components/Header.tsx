@@ -2,7 +2,6 @@
 import Link from "next/link";
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
-import Image from "next/image";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -39,7 +38,7 @@ export default function Header() {
   <Link href="/" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
     Home
   </Link>
-  <Link href="/About" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
+  <Link href="#" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
     About
   </Link>
   <Link href="/Contact" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
