@@ -3,7 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
-type CircleCfg = { label: string; speed: number; end: number; colors: [string, string] };
+type CircleCfg = {
+  label: string;
+  speed: number;
+  end: number;
+  colors: [string, string];
+};
+
 const CIRCLES: CircleCfg[] = [
   { label: "Imagination", speed: 30, end: 60, colors: ["#6b4fd1", "#7534eeff"] },
   { label: "Transparency", speed: 50, end: 70, colors: ["#6c5fe0ff", "#6d1febff"] },
@@ -11,34 +17,39 @@ const CIRCLES: CircleCfg[] = [
 ];
 
 function Circle({ cfg, inView }: { cfg: CircleCfg; inView: boolean }) {
-  const [p, setP] = useState(0);
   const { label, speed, end, colors } = cfg;
-  const size = 120, stroke = 8, r = size / 2 - stroke / 2;
-  const c = 2 * Math.PI * r, o = c - (p / 100) * c;
+  const [p, setP] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const size = 120;
+  const stroke = 8;
+  const r = size / 2 - stroke / 2;
+  const circumference = 2 * Math.PI * r;
+  const offset = circumference - (p / 100) * circumference;
 
-useEffect(() => {
-  if (inView) {
-    setP(0);
-    intervalRef.current = window.setInterval(() => {
-      setP(x => (x >= end ? end : x + 1));
-    }, speed);
-  }
-  
-  return () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+  useEffect(() => {
+    if (inView) {
+      // clear any existing interval
+      if (intervalRef.current) clearInterval(intervalRef.current);
+
+      setP(0);
+      intervalRef.current = window.setInterval(() => {
+        setP(x => (x >= end ? end : x + 1));
+      }, speed);
     }
-  };
-}, [inView, speed, end]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [inView, speed, end]);
 
   return (
     <motion.div
       className="flex-shrink-0 w-1/3 max-w-xs p-2"
       initial={{ opacity: 0, y: 20 }}
-      animate={inView ? { opacity: 0.90, y: 0 } : {}}
+      animate={inView ? { opacity: 0.9, y: 0 } : {}}
       transition={{ duration: 0.6 }}
     >
       <div className="bg-white/20 backdrop-blur-lg border border-white/30 rounded-xl shadow-lg p-[1rem]">
@@ -49,7 +60,14 @@ useEffect(() => {
               <stop offset="100%" stopColor={colors[1]} />
             </linearGradient>
           </defs>
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.2)" strokeWidth={stroke} fill="none" />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth={stroke}
+            fill="none"
+          />
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -58,11 +76,18 @@ useEffect(() => {
             strokeWidth={stroke}
             fill="none"
             strokeLinecap="round"
-            strokeDasharray={c}
-            strokeDashoffset={o}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
             style={{ transition: "stroke-dashoffset 0.3s ease" }}
           />
-          <text x="50%" y="50%" dy=".3em" textAnchor="middle" className="fill-white font-semibold" style={{ fontSize: size * 0.2 }}>
+          <text
+            x="50%"
+            y="50%"
+            dy=".3em"
+            textAnchor="middle"
+            className="fill-white font-semibold"
+            style={{ fontSize: size * 0.2 }}
+          >
             {p}%
           </text>
         </svg>
@@ -72,14 +97,21 @@ useEffect(() => {
   );
 }
 
-export default function ThreeCircleProgress() {
+export default function ProgressPage() {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
 
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.4 });
+    const obs = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.4 }
+    );
     if (ref.current) obs.observe(ref.current);
-    return () => ref.current && obs.unobserve(ref.current);
+
+    return () => {
+      if (ref.current) obs.unobserve(ref.current);
+      obs.disconnect();
+    };
   }, []);
 
   return (
@@ -92,7 +124,7 @@ export default function ThreeCircleProgress() {
       }}
     >
       <div className="flex justify-center gap-6 max-w-4xl w-full p-[1rem]">
-        {CIRCLES.map((cfg) => (
+        {CIRCLES.map(cfg => (
           <Circle key={cfg.label} cfg={cfg} inView={inView} />
         ))}
       </div>

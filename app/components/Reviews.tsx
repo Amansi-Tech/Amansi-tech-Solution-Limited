@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function ReviewsPage() {
@@ -39,9 +40,9 @@ export default function ReviewsPage() {
         ))}
       </div>
 
-      <a href="/" className="mt-6 text-violet-600 hover:underline">
+      <Link href="/" className="mt-6 text-violet-600 hover:underline">
         ← Back Home
-      </a>
+      </Link>
     </main>
   );
 }

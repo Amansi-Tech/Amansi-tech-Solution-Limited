@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import 'aos/dist/aos.css';
 import  AOS  from 'aos';
 import Progress from './Progress';
+import ReviewsPage from './Reviews';
 
 export default function Hero() {
   useEffect(() => {
@@ -75,6 +76,7 @@ export default function Hero() {
       </section>
  <Services />
 <Progress />
+<ReviewsPage />
     </div>
   );
 }
