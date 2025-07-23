@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import 'aos/dist/aos.css';
 import  AOS  from 'aos';
+import Progress from './Progress';
 
 export default function Hero() {
   useEffect(() => {
@@ -73,6 +74,7 @@ export default function Hero() {
         </div>
       </section>
  <Services />
+<Progress />
     </div>
   );
 }
