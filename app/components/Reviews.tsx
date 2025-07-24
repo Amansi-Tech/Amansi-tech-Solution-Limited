@@ -1,4 +1,5 @@
 "use client";
+
 import { db } from "../firebase";
 import {
   collection,
@@ -9,9 +10,12 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { Rating, RatingStar } from "flowbite-react";
-import { Avatar } from "flowbite-react";
+import { useRouter } from "next/navigation";
+import { Rating, RatingStar, Avatar } from "flowbite-react";
+import toast, { Toaster } from "react-hot-toast";
+import { motion } from "framer-motion";
 
+// Types
 type Review = {
   id: string;
   text: string;
@@ -25,6 +29,7 @@ export default function ReviewsPage() {
   const [text, setText] = useState("");
   const [rating, setRating] = useState<number | null>(null);
   const [name, setName] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
@@ -39,22 +44,34 @@ export default function ReviewsPage() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!rating) return alert("Please select a rating.");
+    if (!rating) return toast.error("Please select a rating.");
+
     await addDoc(collection(db, "reviews"), {
       text,
       rating,
       name: name || "Anonymous",
       createdAt: Timestamp.now(),
     });
+
+    // Clear form
     setText("");
     setRating(null);
     setName("");
+
+    toast.success("Review submitted!");
+    router.push("/reviews");
   };
 
   return (
     <main className="min-h-screen p-4 bg-gray-50 flex flex-col items-center">
+      <Toaster />
+
       <h1 className="text-3xl font-bold mb-6">User Reviews</h1>
-      <form onSubmit={handleAdd} className="w-full max-w-xl bg-white p-6 rounded-lg shadow-md mb-8">
+
+      <form
+        onSubmit={handleAdd}
+        className="w-full max-w-xl bg-white p-6 rounded-lg shadow-md mb-8"
+      >
         <input
           type="text"
           value={name}
@@ -62,10 +79,11 @@ export default function ReviewsPage() {
           placeholder="Your name (optional)"
           className="w-full mb-4 p-2 border rounded focus:ring-2 focus:ring-violet-500"
         />
+
         <div className="mb-4">
           <label className="block mb-1 font-medium">Your Rating:</label>
           <Rating>
-            {[1,2,3,4,5].map(n => (
+            {[1, 2, 3, 4, 5].map(n => (
               <RatingStar
                 key={n}
                 filled={rating !== null && n <= rating}
@@ -74,6 +92,7 @@ export default function ReviewsPage() {
             ))}
           </Rating>
         </div>
+
         <textarea
           value={text}
           onChange={e => setText(e.target.value)}
@@ -81,6 +100,7 @@ export default function ReviewsPage() {
           placeholder="Write your review…"
           className="w-full p-2 border rounded focus:ring-2 focus:ring-violet-500 h-24 resize-none mb-4"
         />
+
         <button
           type="submit"
           className="w-full px-6 py-2 bg-violet-600 text-white rounded hover:bg-violet-700 transition"
@@ -91,7 +111,13 @@ export default function ReviewsPage() {
 
       <section className="w-full max-w-xl space-y-6">
         {reviews.map(r => (
-          <div key={r.id} className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            key={r.id}
+            className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition"
+          >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-3">
                 <Avatar
@@ -113,7 +139,7 @@ export default function ReviewsPage() {
               </Rating>
             </div>
             <p className="text-gray-700">{r.text}</p>
-          </div>
+          </motion.div>
         ))}
       </section>
     </main>
