@@ -1,6 +1,6 @@
 "use client";
 
-import { db } from "./firebase";
+import { db, auth } from "./lib/firebase";
 
 import {
   collection,
