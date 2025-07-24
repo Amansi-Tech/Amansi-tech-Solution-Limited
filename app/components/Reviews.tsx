@@ -1,6 +1,7 @@
 "use client";
 
-import { db, auth } from "../lib/firebase";
+import { db } from "../../lib/firebase"; // Go up to root, then into lib/
+
 
 import {
   collection,
