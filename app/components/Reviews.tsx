@@ -1,6 +1,7 @@
 "use client";
 
-import { db } from "../firebase";
+import { db } from "@/lib/firebase";
+
 import {
   collection,
   addDoc,
@@ -12,7 +13,8 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Rating, RatingStar, Avatar } from "flowbite-react";
-import toast, { Toaster } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
+
 import { motion } from "framer-motion";
 
 // Types
