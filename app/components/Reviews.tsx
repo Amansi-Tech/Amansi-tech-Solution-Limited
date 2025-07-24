@@ -1,7 +1,6 @@
 "use client";
 
-import { db } from "../../lib/firebase"; // Go up to root, then into lib/
-
+import { db } from "../../lib/firebase";
 
 import {
   collection,
@@ -14,8 +13,6 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Rating, RatingStar, Avatar } from "flowbite-react";
-
-
 import { motion } from "framer-motion";
 
 // Types
@@ -47,7 +44,7 @@ export default function ReviewsPage() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!rating) return toast.error("Please select a rating.");
+    if (!rating) return;
 
     await addDoc(collection(db, "reviews"), {
       text,
@@ -61,14 +58,11 @@ export default function ReviewsPage() {
     setRating(null);
     setName("");
 
-    toast.success("Review submitted!");
     router.push("/reviews");
   };
 
   return (
     <main className="min-h-screen p-4 bg-gray-50 flex flex-col items-center">
-      <Toaster />
-
       <h1 className="text-3xl font-bold mb-6">User Reviews</h1>
 
       <form
@@ -148,4 +142,3 @@ export default function ReviewsPage() {
     </main>
   );
 }
-
