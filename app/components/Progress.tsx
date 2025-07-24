@@ -19,10 +19,7 @@ const CIRCLES: CircleCfg[] = [
 function Circle({ cfg, inView }: { cfg: CircleCfg; inView: boolean }) {
   const { label, speed, end, colors } = cfg;
   const [p, setP] = useState(0);
-
- const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const size = 120;
   const stroke = 8;
@@ -30,32 +27,31 @@ function Circle({ cfg, inView }: { cfg: CircleCfg; inView: boolean }) {
   const circumference = 2 * Math.PI * r;
   const offset = circumference - (p / 100) * circumference;
 
-useEffect(() => {
-  if (inView) {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    setP(0);
-    intervalRef.current = setInterval(() => {
-      setP(x => (x >= end ? end : x + 1));
-    }, speed);
-  }
-  return () => {
-    if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+  useEffect(() => {
+    if (inView) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      setP(0);
+      intervalRef.current = setInterval(() => {
+        setP((x) => (x >= end ? end : x + 1));
+      }, speed);
     }
-  };
-}, [inView, speed, end]);
-
+    return () => {
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [inView, speed, end]);
 
   return (
     <motion.div
-      className="flex-shrink-0 w-1/3 max-w-xs p-2"
+      className="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 p-2"
       initial={{ opacity: 0, y: 20 }}
-      animate={inView ? { opacity: 0.9, y: 0 } : {}}
+      animate={inView ? { opacity: 0.95, y: 0 } : {}}
       transition={{ duration: 0.6 }}
     >
-      <div className="bg-white/20 backdrop-blur-lg border border-white/30 rounded-xl shadow-lg p-[1rem]">
-        <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-auto">
+      <div className="bg-white/20 backdrop-blur-lg border border-white/30 rounded-xl shadow-lg p-4 sm:p-6 text-center">
+        <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[120px] mx-auto">
           <defs>
             <linearGradient id={`g-${label}`} x1="0" x2="1" y1="0" y2="0">
               <stop offset="0%" stopColor={colors[0]} />
@@ -93,7 +89,7 @@ useEffect(() => {
             {p}%
           </text>
         </svg>
-        <p className="mt-2 text-center text-white text-[18px]">{label}</p>
+        <p className="mt-3 text-white text-lg font-medium">{label}</p>
       </div>
     </motion.div>
   );
@@ -109,7 +105,6 @@ export default function ProgressPage() {
       { threshold: 0.4 }
     );
     if (ref.current) obs.observe(ref.current);
-
     return () => {
       if (ref.current) obs.unobserve(ref.current);
       obs.disconnect();
@@ -119,17 +114,18 @@ export default function ProgressPage() {
   return (
     <div
       ref={ref}
-      className="min-h-screen flex items-center justify-center px-4 bg-center bg-cover relative z-10"
+      className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center relative z-10"
       style={{
         backgroundImage: "url('/bg-2.jpg')",
         backgroundColor: "rgba(127, 20, 226, 0.4)",
       }}
     >
-      <div className="flex justify-center gap-6 max-w-4xl w-full p-[1rem]">
-        {CIRCLES.map(cfg => (
+      <div className="flex flex-wrap justify-center gap-6 max-w-6xl w-full">
+        {CIRCLES.map((cfg) => (
           <Circle key={cfg.label} cfg={cfg} inView={inView} />
         ))}
       </div>
     </div>
   );
 }
+
