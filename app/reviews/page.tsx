@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "./lib/firebase";
+import { db } from "./firebase";
 import {
   collection,
   onSnapshot,
