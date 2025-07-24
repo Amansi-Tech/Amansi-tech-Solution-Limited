@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 
-import { db } from "../lib/firebase"; // Go up one level from components/
+import { db } from "../../lib/firebase";
 
 
 
