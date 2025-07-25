@@ -60,19 +60,21 @@ export default function ServicesPackage() {
             className="bg-white p-6 rounded-xl shadow-lg text-center transform transition-transform duration-500 hover:scale-105 hover:shadow-xl hover:ring-2 hover:ring-violet-200 hover:bg-violet-50"
           >
             <Link href={services[index].href || "#"}>
-              {services[index].icon}
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
-                {services[index].title}
-              </h3>
-              <p className="text-gray-600">{services[index].description}</p>
-              {services[index].motivation && (
-                <p className="text-sm text-violet-700 italic mt-2 mb-2">
-                  {services[index].motivation}
-                </p>
-              )}
-              <button className="text-violet-600 font-medium hover:underline mt-2">
-                Learn More →
-              </button>
+              <div>
+                {services[index].icon}
+                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  {services[index].title}
+                </h3>
+                <p className="text-gray-600">{services[index].description}</p>
+                {services[index].motivation && (
+                  <p className="text-sm text-violet-700 italic mt-2 mb-2">
+                    {services[index].motivation}
+                  </p>
+                )}
+                <button className="text-violet-600 font-medium hover:underline mt-2">
+                  Learn More →
+                </button>
+              </div>
             </Link>
           </motion.div>
         </AnimatePresence>
