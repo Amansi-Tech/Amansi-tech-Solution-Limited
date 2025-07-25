@@ -5,7 +5,7 @@ import ServicesPackage from "./Package"
 
 const Services = () => {
   return (
-    <section  className={styles.container}>
+    <section  className={styles.container} id="projects">
 
       <div className="relative flex items-center justify-center my-8 mx-auto w-fit">
 
