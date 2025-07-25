@@ -1,8 +1,8 @@
 
-// app/reviews/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { db } from "../../lib/firebase";
 import {
   collection,
@@ -14,7 +14,7 @@ import {
   doc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import { Rating, RatingStar, Avatar } from "flowbite-react";
+import { Rating, RatingStar, Avatar, Button } from "flowbite-react";
 
 interface Review {
   id: string;
@@ -28,18 +28,21 @@ interface Review {
 export default function AllReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, user => setCurrentUser(user));
+    const unsubscribe = onAuthStateChanged(auth, (user) =>
+      setCurrentUser(user)
+    );
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, snapshot => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       setReviews(
-        snapshot.docs.map(doc => ({
+        snapshot.docs.map((doc) => ({
           id: doc.id,
           ...(doc.data() as Omit<Review, "id">),
         }))
@@ -57,7 +60,18 @@ export default function AllReviewsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-100 py-10 px-4 flex flex-col items-center">
+    <main className="min-h-screen bg-gray-100 py-10 px-4 flex flex-col items-center text-black">
+      {/* Back Home Button */}
+      <div className="w-full max-w-4xl mb-6 flex justify-start">
+        <Button
+          onClick={() => router.push("/")}
+          color="purple"
+          className="rounded-lg font-medium"
+        >
+          ← Back Home
+        </Button>
+      </div>
+
       <h1 className="text-4xl font-extrabold mb-8 text-violet-700 text-center">
         What Users Are Saying 💬
       </h1>
@@ -66,7 +80,7 @@ export default function AllReviewsPage() {
         {reviews.length === 0 ? (
           <p className="text-center text-gray-500 text-lg">No reviews yet.</p>
         ) : (
-          reviews.map(r => (
+          reviews.map((r) => (
             <div
               key={r.id}
               className="relative bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all"
@@ -79,12 +93,15 @@ export default function AllReviewsPage() {
                     size="md"
                   />
                   <div>
-                    <p className="font-semibold text-gray-800">{r.name || "Anonymous"}</p>
+                    <p className="font-semibold text-gray-800">
+                      {r.name || "Anonymous"}
+                    </p>
                     <p className="text-sm text-gray-500">
                       {r.createdAt.toDate().toLocaleDateString()}
                     </p>
                   </div>
                 </div>
+
                 <Rating size="sm">
                   {[...Array(5)].map((_, i) => (
                     <RatingStar key={i} filled={i < r.rating} />
@@ -94,6 +111,7 @@ export default function AllReviewsPage() {
 
               <p className="text-gray-700 text-base">{r.text}</p>
 
+              {/* Show delete if user is the owner */}
               {currentUser?.uid === r.uid && (
                 <div className="absolute top-4 right-4">
                   <button
