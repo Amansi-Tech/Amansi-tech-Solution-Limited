@@ -1,12 +1,9 @@
+
 // app/reviews/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { db } from "../../lib/firebase";
-
-
-
 import {
   collection,
   onSnapshot,
@@ -61,18 +58,20 @@ export default function AllReviewsPage() {
 
   return (
     <main className="min-h-screen bg-gray-100 py-10 px-4 flex flex-col items-center">
-      <h1 className="text-4xl font-bold mb-8 text-violet-700">What Users Are Saying 💬</h1>
+      <h1 className="text-4xl font-extrabold mb-8 text-violet-700 text-center">
+        What Users Are Saying 💬
+      </h1>
 
-      <div className="w-full max-w-3xl space-y-6">
+      <div className="w-full max-w-4xl space-y-6">
         {reviews.length === 0 ? (
-          <p className="text-center text-gray-500">No reviews yet.</p>
+          <p className="text-center text-gray-500 text-lg">No reviews yet.</p>
         ) : (
           reviews.map(r => (
             <div
               key={r.id}
-              className="relative bg-white p-5 rounded-xl shadow hover:shadow-lg transition-all"
+              className="relative bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all"
             >
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <Avatar
                     placeholderInitials={(r.name || "A")[0]}
@@ -80,22 +79,23 @@ export default function AllReviewsPage() {
                     size="md"
                   />
                   <div>
-                    <p className="font-semibold">{r.name || "Anonymous"}</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="font-semibold text-gray-800">{r.name || "Anonymous"}</p>
+                    <p className="text-sm text-gray-500">
                       {r.createdAt.toDate().toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <Rating size="sm">
-                  {[...Array(5).keys()].map(i => (
+                  {[...Array(5)].map((_, i) => (
                     <RatingStar key={i} filled={i < r.rating} />
                   ))}
                 </Rating>
               </div>
-              <p className="text-gray-700 mb-2">{r.text}</p>
+
+              <p className="text-gray-700 text-base">{r.text}</p>
 
               {currentUser?.uid === r.uid && (
-                <div className="absolute top-3 right-3 flex gap-2">
+                <div className="absolute top-4 right-4">
                   <button
                     onClick={() => handleDelete(r.id)}
                     className="text-sm text-red-600 hover:underline"
@@ -111,5 +111,6 @@ export default function AllReviewsPage() {
     </main>
   );
 }
+
 
 
