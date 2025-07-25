@@ -19,10 +19,13 @@ export default function ReviewForm() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const router = useRouter();
 
+  // Get the current user
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, user => setCurrentUser(user));
-    return unsubscribe;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -100,3 +103,4 @@ export default function ReviewForm() {
     </main>
   );
 }
+
