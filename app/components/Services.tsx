@@ -1,6 +1,7 @@
 import React from 'react'
 import Offer from './Offer';
 import styles from '../styles/BackgroundImage.module.css';
+import ServicesPackage from "./Package"
 
 const Services = () => {
   return (
