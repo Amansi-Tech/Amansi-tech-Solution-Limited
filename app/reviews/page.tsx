@@ -10,12 +10,9 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import {
-  onAuthStateChanged,
-  User,
-} from "firebase/auth";
+import { onAuthStateChanged, User } from "firebase/auth";
 import Link from "next/link";
-import { Rating, RatingStar } from "flowbite-react";
+import { RatingStar } from "flowbite-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -23,7 +20,6 @@ export default function ReviewsPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  // Get current user
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -31,7 +27,6 @@ export default function ReviewsPage() {
     return () => unsubscribe();
   }, []);
 
-  // Fetch all reviews
   useEffect(() => {
     const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -46,7 +41,6 @@ export default function ReviewsPage() {
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this review?")) return;
-
     try {
       await deleteDoc(doc(db, "reviews", id));
       console.log("Review deleted.");
@@ -69,9 +63,7 @@ export default function ReviewsPage() {
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {reviews.length === 0 ? (
-          <p className="text-center col-span-full text-gray-500">
-            No reviews yet.
-          </p>
+          <p className="text-center col-span-full text-gray-500">No reviews yet.</p>
         ) : (
           reviews.map((review) => (
             <motion.div
@@ -79,7 +71,7 @@ export default function ReviewsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-white shadow-md rounded-xl p-5 space-y-4"
+              className="bg-white shadow-md rounded-xl p-5 space-y-4 hover:shadow-lg transition"
             >
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-lg text-violet-600">
@@ -129,4 +121,5 @@ export default function ReviewsPage() {
     </main>
   );
 }
+
 
