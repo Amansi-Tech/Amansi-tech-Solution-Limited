@@ -43,11 +43,11 @@ export default function ReviewForm() {
     setText("");
     setRating(null);
     setName("");
-    router.push("/feedback");
+    router.push("/reviews");
   };
 
   return (
-    <main className="min-h-screen px-4 py-10 bg-gray-100 flex flex-col items-center">
+    <main className="min-h-screen px-4 py-10 bg-gray-100 flex flex-col items-center text-black">
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -70,7 +70,7 @@ export default function ReviewForm() {
         />
 
         <div>
-          <label className="block mb-2 text-gray-700 font-medium">
+          <label className="block mb-2 text-black font-medium">
             Your Rating:
           </label>
           <Rating>
@@ -90,7 +90,7 @@ export default function ReviewForm() {
           onChange={(e) => setText(e.target.value)}
           required
           placeholder="Write your review…"
-          className="w-full px-4 py-2 border border-gray-300 rounded-md h-28 resize-none text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md h-28 resize-none text-black focus:outline-none focus:ring-2 focus:ring-violet-500"
         />
 
         <button
