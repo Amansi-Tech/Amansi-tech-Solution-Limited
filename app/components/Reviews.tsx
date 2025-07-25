@@ -68,16 +68,15 @@ export default function ReviewForm() {
     }, 100);
   };
 
- const handleGoogleSignIn = async () => {
-  const auth = getAuth();
-  const provider = new GoogleAuthProvider();
-  try {
-    await signInWithPopup(auth, provider);
-  } catch (error: any) {
-    console.error("Google Sign-In Error:", error.code, error.message);
-    alert(`Sign-in error: ${error.message}`);
-  }
-};
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error: any) {
+      console.error("Google Sign-In Error:", error.code, error.message);
+      alert(`Sign-in error: ${error.message}`);
+    }
+  };
 
   const handleGoogleSignOut = async () => {
     try {
@@ -164,3 +163,4 @@ export default function ReviewForm() {
     </main>
   );
 }
+
