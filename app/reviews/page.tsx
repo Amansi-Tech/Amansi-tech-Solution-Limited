@@ -70,7 +70,7 @@ export default function ReviewsPage() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {reviews.length === 0 ? (
           <p className="text-center col-span-full text-gray-500">
-            No reviews yet.
+            No reviews ye.
           </p>
         ) : (
           reviews.map((review) => (
