@@ -43,7 +43,9 @@ export default function ReviewForm() {
     setText("");
     setRating(null);
     setName("");
-    router.push("/reviews");
+   setTimeout(() => {
+  router.push("/reviews");
+}, 100); // 100ms delay
   };
 
   return (
