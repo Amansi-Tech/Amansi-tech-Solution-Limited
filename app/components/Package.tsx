@@ -64,7 +64,7 @@ export default function Package() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -100, opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="bg-white p-6 rounded-xl shadow-lg text-center transform transition-transform duration-500 hover:scale-105 hover:shadow-xl hover:ring-2 hover:ring-violet-200"
+            className="bg-white p-6 rounded-xl shadow-lg text-center transform transition-transform duration-500 hover:scale-105 hover:shadow-xl hover:ring-2 hover:ring-violet-200 hover:bg-violet-50"
           >
             <Link href={services[index].href || "#"}>
               {services[index].icon}
