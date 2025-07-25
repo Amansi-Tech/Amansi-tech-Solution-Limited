@@ -7,8 +7,10 @@ import {
   collection,
   addDoc,
   Timestamp,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
-import { getAuth, onAuthStateChanged, User } from "firebase/auth";
+import { getAuth, onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { Rating, RatingStar } from "flowbite-react";
 import { motion } from "framer-motion";
 
@@ -17,9 +19,9 @@ export default function ReviewForm() {
   const [rating, setRating] = useState<number | null>(null);
   const [name, setName] = useState("");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const router = useRouter();
 
-  // Get the current user
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -28,24 +30,56 @@ export default function ReviewForm() {
     return () => unsubscribe();
   }, []);
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const handleAddOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rating || !text.trim()) return;
 
-    await addDoc(collection(db, "reviews"), {
-      text: text.trim(),
-      rating,
-      name: name.trim() || "Anonymous",
-      createdAt: Timestamp.now(),
-      uid: currentUser?.uid || null,
-    });
+    if (!currentUser) {
+      alert("Please sign in with Google to submit a review.");
+      return;
+    }
+
+    if (editingReviewId) {
+      await updateDoc(doc(db, "reviews", editingReviewId), {
+        text: text.trim(),
+        rating,
+        name: currentUser.displayName || name.trim() || "Anonymous",
+        createdAt: Timestamp.now(),
+        uid: currentUser.uid,
+      });
+    } else {
+      await addDoc(collection(db, "reviews"), {
+        text: text.trim(),
+        rating,
+        name: currentUser.displayName || name.trim() || "Anonymous",
+        createdAt: Timestamp.now(),
+        uid: currentUser.uid,
+      });
+    }
 
     setText("");
     setRating(null);
     setName("");
-   setTimeout(() => {
-  router.push("/reviews");
-}, 100); // 100ms delay
+    setEditingReviewId(null);
+
+    setTimeout(() => {
+      router.push("/reviews");
+    }, 100);
+  };
+
+  const handleGoogleSignIn = async () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Google Sign-In Error:", error);
+    }
+  };
+
+  const handleGoogleSignOut = async () => {
+    const auth = getAuth();
+    await signOut(auth);
   };
 
   return (
@@ -59,8 +93,27 @@ export default function ReviewForm() {
         Share Your Experience With Us ✨
       </motion.h1>
 
+      {!currentUser ? (
+        <button
+          onClick={handleGoogleSignIn}
+          className="w-full max-w-xl py-2 mb-4 bg-red-500 text-white rounded-md hover:bg-red-600 transition font-semibold"
+        >
+          Sign in with Google
+        </button>
+      ) : (
+        <div className="text-center text-sm text-gray-600 mb-4">
+          Logged in as <span className="font-semibold">{currentUser.displayName}</span>
+          <button
+            onClick={handleGoogleSignOut}
+            className="ml-4 text-red-500 underline text-sm"
+          >
+            Sign out
+          </button>
+        </div>
+      )}
+
       <form
-        onSubmit={handleAdd}
+        onSubmit={handleAddOrUpdate}
         className="w-full max-w-xl bg-white p-6 rounded-xl shadow-lg space-y-5"
       >
         <input
@@ -99,10 +152,9 @@ export default function ReviewForm() {
           type="submit"
           className="w-full py-2 bg-violet-600 text-white rounded-md font-semibold hover:bg-violet-700 transition"
         >
-          Submit Review
+          {editingReviewId ? "Update Review" : "Submit Review"}
         </button>
       </form>
     </main>
   );
 }
-
