@@ -20,7 +20,7 @@ import {
 import { Rating, RatingStar } from "flowbite-react";
 import { motion } from "framer-motion";
 
-export default function ReviewForm() {
+export default function ReviewFormPage() {
   const [text, setText] = useState("");
   const [rating, setRating] = useState<number | null>(null);
   const [name, setName] = useState("");
@@ -52,20 +52,25 @@ export default function ReviewForm() {
       uid: currentUser.uid,
     };
 
-    if (editingReviewId) {
-      await updateDoc(doc(db, "reviews", editingReviewId), reviewData);
-    } else {
-      await addDoc(collection(db, "reviews"), reviewData);
+    try {
+      if (editingReviewId) {
+        await updateDoc(doc(db, "reviews", editingReviewId), reviewData);
+      } else {
+        await addDoc(collection(db, "reviews"), reviewData);
+      }
+
+      setText("");
+      setRating(null);
+      setName("");
+      setEditingReviewId(null);
+
+      setTimeout(() => {
+        router.push("/reviews");
+      }, 100);
+    } catch (error) {
+      console.error("Error saving review:", error);
+      alert("Something went wrong. Please try again.");
     }
-
-    setText("");
-    setRating(null);
-    setName("");
-    setEditingReviewId(null);
-
-    setTimeout(() => {
-      router.push("/reviews");
-    }, 100);
   };
 
   const handleGoogleSignIn = async () => {
@@ -163,4 +168,5 @@ export default function ReviewForm() {
     </main>
   );
 }
+
 
