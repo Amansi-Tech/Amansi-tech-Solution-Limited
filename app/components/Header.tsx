@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false
+  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export default function Header() {
       {menuOpen && (
         <div className="md:hidden px-4 pb-4">
           <nav className="flex flex-col gap-3 font-medium">
-            <Link href="#" className="hover:text-gray-600 transition">Home</Link>
+            <Link href="/" className="hover:text-gray-600 transition">Home</Link>
             <Link href="#" className="hover:text-gray-600 transition">About</Link>
             <Link href="/contact" className="hover:text-gray-600 transition" passHref>Contact</Link>
             <Link href="#" className="hover:text-gray-600 transition">Services</Link>
