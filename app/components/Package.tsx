@@ -11,7 +11,6 @@ import {
   Code2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSwipeable } from "react-swipeable";
 
 const services = [
   {
@@ -48,15 +47,9 @@ export default function ServicesPackage() {
     setIndex((prev) => (prev - 1 + services.length) % services.length);
   };
 
-  const swipeHandlers = useSwipeable({
-    onSwipedLeft: handleNext,
-    onSwipedRight: handlePrev,
-    trackMouse: true,
-  });
-
   return (
     <div className="sm:hidden flex flex-col items-center relative w-full max-w-md mx-auto">
-      <div {...swipeHandlers} className="relative w-full overflow-hidden">
+      <div className="relative w-full overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={index}
@@ -104,4 +97,5 @@ export default function ServicesPackage() {
     </div>
   );
 }
+
 
