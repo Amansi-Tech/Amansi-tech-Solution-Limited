@@ -1,19 +1,7 @@
 'use client';
 import Link from "next/link";
-import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 
-export default function Header() {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   return (
     <header
