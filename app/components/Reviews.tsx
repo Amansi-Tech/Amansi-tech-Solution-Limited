@@ -68,16 +68,16 @@ export default function ReviewForm() {
     }, 100);
   };
 
-  const handleGoogleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-      console.log("Google Sign-In successful");
-    } catch (error) {
-      console.error("Google Sign-In Error:", error);
-      alert("Google Sign-In failed. Check console for details.");
-    }
-  };
+ const handleGoogleSignIn = async () => {
+  const auth = getAuth();
+  const provider = new GoogleAuthProvider();
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error: any) {
+    console.error("Google Sign-In Error:", error.code, error.message);
+    alert(`Sign-in error: ${error.message}`);
+  }
+};
 
   const handleGoogleSignOut = async () => {
     try {
