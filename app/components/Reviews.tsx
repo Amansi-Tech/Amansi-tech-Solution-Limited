@@ -100,9 +100,3 @@ export default function ReviewForm() {
     </main>
   );
 }
-
-
-      </form>
-    </main>
-  );
-}
