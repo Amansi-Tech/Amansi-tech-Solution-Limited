@@ -1,158 +1,132 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import { db } from "../../../../lib/firebase";
+import { db, auth } from "../../lib/firebase";
 import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  deleteDoc,
   doc,
-  getDoc,
-  updateDoc,
-  Timestamp,
 } from "firebase/firestore";
+import {
+  onAuthStateChanged,
+  User,
+} from "firebase/auth";
+import Link from "next/link";
 import { Rating, RatingStar } from "flowbite-react";
 import { motion } from "framer-motion";
+import { format } from "date-fns";
 
-export default function EditReviewPage() {
-  const { id } = useParams();
-  const router = useRouter();
-
-  const [text, setText] = useState("");
-  const [rating, setRating] = useState<number | null>(null);
-  const [name, setName] = useState("");
+export default function ReviewsPage() {
+  const [reviews, setReviews] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  // Get logged-in user
+  // Get current user
   useEffect(() => {
-    const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
     });
     return () => unsubscribe();
   }, []);
 
-  // Fetch review and check access
+  // Fetch all reviews
   useEffect(() => {
-    if (!id || !currentUser) return;
+    const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const list = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setReviews(list);
+    });
+    return () => unsubscribe();
+  }, []);
 
-    const fetchReview = async () => {
-      try {
-        const reviewRef = doc(db, "reviews", id as string);
-        const reviewSnap = await getDoc(reviewRef);
-
-        if (!reviewSnap.exists()) {
-          setError("Review not found.");
-          return;
-        }
-
-        const review = reviewSnap.data();
-
-        if (review.uid !== currentUser.uid) {
-          setError("Unauthorized access.");
-          return;
-        }
-
-        setText(review.text);
-        setRating(review.rating);
-        setName(review.name || "");
-      } catch (err) {
-        setError("Something went wrong while loading review.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchReview();
-  }, [id, currentUser]);
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!rating || !text.trim()) return;
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this review?")) return;
 
     try {
-      await updateDoc(doc(db, "reviews", id as string), {
-        text: text.trim(),
-        rating,
-        name: name.trim() || "Anonymous",
-        updatedAt: Timestamp.now(),
-      });
-      router.push("/reviews");
-    } catch (err) {
-      console.error("Failed to update review:", err);
+      await deleteDoc(doc(db, "reviews", id));
+      console.log("Review deleted.");
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Failed to delete review.");
     }
   };
 
-  if (loading) {
-    return <p className="text-center mt-10">Loading...</p>;
-  }
-
-  if (error) {
-    return (
-      <p className="text-center mt-10 text-red-600 font-medium">{error}</p>
-    );
-  }
-
   return (
-    <main className="min-h-screen px-4 py-10 bg-gray-100 flex flex-col items-center text-black">
+    <main className="min-h-screen px-4 py-10 bg-gray-50 text-black">
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-3xl sm:text-4xl font-bold mb-8 text-violet-700 text-center"
+        transition={{ duration: 0.4 }}
+        className="text-3xl sm:text-4xl font-bold mb-10 text-center text-violet-700"
       >
-        ✏️ Edit Your Review
+        ⭐ What People Are Saying
       </motion.h1>
 
-      <form
-        onSubmit={handleUpdate}
-        className="w-full max-w-xl bg-white p-6 rounded-xl shadow-lg space-y-5"
-      >
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Your name (optional)"
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
-        />
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {reviews.length === 0 ? (
+          <p className="text-center col-span-full text-gray-500">
+            No reviews yet.
+          </p>
+        ) : (
+          reviews.map((review) => (
+            <motion.div
+              key={review.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white shadow-md rounded-xl p-5 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-lg text-violet-600">
+                  {review.name || "Anonymous"}
+                </h3>
+                <span className="text-xs text-gray-500">
+                  {review.createdAt?.seconds &&
+                    format(
+                      new Date(review.createdAt.seconds * 1000),
+                      "MMM dd, yyyy"
+                    )}
+                </span>
+              </div>
 
-        <div>
-          <label className="block mb-2 text-black font-medium">
-            Your Rating:
-          </label>
-          <Rating>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <RatingStar
-                key={n}
-                filled={rating !== null && n <= rating}
-                onClick={() => setRating(n)}
-                className="cursor-pointer"
-              />
-            ))}
-          </Rating>
-        </div>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <RatingStar
+                    key={n}
+                    filled={n <= review.rating}
+                    className="text-yellow-400"
+                  />
+                ))}
+              </div>
 
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          required
-          placeholder="Update your review…"
-          className="w-full px-4 py-2 border border-gray-300 rounded-md h-28 resize-none text-black focus:outline-none focus:ring-2 focus:ring-violet-500"
-        />
+              <p className="text-gray-800">{review.text}</p>
 
-        <button
-          type="submit"
-          className="w-full py-2 bg-violet-600 text-white rounded-md font-semibold hover:bg-violet-700 transition"
-        >
-          Save Changes
-        </button>
-      </form>
+              {currentUser && review.uid === currentUser.uid && (
+                <div className="flex gap-3 justify-end text-sm">
+                  <Link
+                    href={`/reviews/edit/${review.id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(review.id)}
+                    className="text-red-500 hover:underline"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          ))
+        )}
+      </div>
     </main>
   );
 }
-
-
-
 
