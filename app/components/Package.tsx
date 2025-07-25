@@ -37,7 +37,7 @@ const services = [
   },
 ];
 
-export default function Package() {
+export default function ServicesPackage() {
   const [index, setIndex] = useState(0);
 
   const handleNext = () => {
