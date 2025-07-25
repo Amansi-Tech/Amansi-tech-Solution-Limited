@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { db } from "../../lib/firebase";
+import { db, auth } from "../../lib/firebase";
 import {
   collection,
   addDoc,
@@ -10,7 +10,13 @@ import {
   updateDoc,
   doc,
 } from "firebase/firestore";
-import { getAuth, onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  User,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
 import { Rating, RatingStar } from "flowbite-react";
 import { motion } from "framer-motion";
 
@@ -23,7 +29,6 @@ export default function ReviewForm() {
   const router = useRouter();
 
   useEffect(() => {
-    const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
     });
@@ -39,22 +44,18 @@ export default function ReviewForm() {
       return;
     }
 
+    const reviewData = {
+      text: text.trim(),
+      rating,
+      name: currentUser.displayName || name.trim() || "Anonymous",
+      createdAt: Timestamp.now(),
+      uid: currentUser.uid,
+    };
+
     if (editingReviewId) {
-      await updateDoc(doc(db, "reviews", editingReviewId), {
-        text: text.trim(),
-        rating,
-        name: currentUser.displayName || name.trim() || "Anonymous",
-        createdAt: Timestamp.now(),
-        uid: currentUser.uid,
-      });
+      await updateDoc(doc(db, "reviews", editingReviewId), reviewData);
     } else {
-      await addDoc(collection(db, "reviews"), {
-        text: text.trim(),
-        rating,
-        name: currentUser.displayName || name.trim() || "Anonymous",
-        createdAt: Timestamp.now(),
-        uid: currentUser.uid,
-      });
+      await addDoc(collection(db, "reviews"), reviewData);
     }
 
     setText("");
@@ -68,18 +69,22 @@ export default function ReviewForm() {
   };
 
   const handleGoogleSignIn = async () => {
-    const auth = getAuth();
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
+      console.log("Google Sign-In successful");
     } catch (error) {
       console.error("Google Sign-In Error:", error);
+      alert("Google Sign-In failed. Check console for details.");
     }
   };
 
   const handleGoogleSignOut = async () => {
-    const auth = getAuth();
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Sign-out error:", error);
+    }
   };
 
   return (
@@ -102,7 +107,8 @@ export default function ReviewForm() {
         </button>
       ) : (
         <div className="text-center text-sm text-gray-600 mb-4">
-          Logged in as <span className="font-semibold">{currentUser.displayName}</span>
+          Logged in as{" "}
+          <span className="font-semibold">{currentUser.displayName}</span>
           <button
             onClick={handleGoogleSignOut}
             className="ml-4 text-red-500 underline text-sm"
