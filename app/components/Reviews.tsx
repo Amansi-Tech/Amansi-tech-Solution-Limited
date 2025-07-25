@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { db, auth } from "../../lib/firebase";
+import { db, auth } from "../lib/firebase";
 import {
   collection,
   addDoc,
   Timestamp,
-  updateDoc,
-  doc,
 } from "firebase/firestore";
 import {
   onAuthStateChanged,
@@ -25,48 +23,37 @@ export default function ReviewFormPage() {
   const [rating, setRating] = useState<number | null>(null);
   const [name, setName] = useState("");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-    });
-    return () => unsubscribe();
+    const unsubscribe = onAuthStateChanged(auth, setCurrentUser);
+    return unsubscribe;
   }, []);
 
-  const handleAddOrUpdate = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!rating || !text.trim()) return;
 
     if (!currentUser) {
       alert("Please sign in with Google to submit a review.");
       return;
     }
 
-    const reviewData = {
-      text: text.trim(),
-      rating,
-      name: currentUser.displayName || name.trim() || "Anonymous",
-      createdAt: Timestamp.now(),
-      uid: currentUser.uid,
-    };
+    if (!rating || !text.trim()) return;
 
     try {
-      if (editingReviewId) {
-        await updateDoc(doc(db, "reviews", editingReviewId), reviewData);
-      } else {
-        await addDoc(collection(db, "reviews"), reviewData);
-      }
+      await addDoc(collection(db, "reviews"), {
+        text: text.trim(),
+        rating,
+        name: currentUser.displayName || name.trim() || "Anonymous",
+        createdAt: Timestamp.now(),
+        uid: currentUser.uid,
+      });
 
       setText("");
       setRating(null);
       setName("");
-      setEditingReviewId(null);
 
-      setTimeout(() => {
-        router.push("/reviews");
-      }, 100);
+      router.push("/reviews");
     } catch (error) {
       console.error("Error saving review:", error);
       alert("Something went wrong. Please try again.");
@@ -78,7 +65,7 @@ export default function ReviewFormPage() {
     try {
       await signInWithPopup(auth, provider);
     } catch (error: any) {
-      console.error("Google Sign-In Error:", error.code, error.message);
+      console.error("Google Sign-In Error:", error.message);
       alert(`Sign-in error: ${error.message}`);
     }
   };
@@ -123,7 +110,7 @@ export default function ReviewFormPage() {
       )}
 
       <form
-        onSubmit={handleAddOrUpdate}
+        onSubmit={handleSubmit}
         className="w-full max-w-xl bg-white p-6 rounded-xl shadow-lg space-y-5"
       >
         <input
@@ -162,11 +149,12 @@ export default function ReviewFormPage() {
           type="submit"
           className="w-full py-2 bg-violet-600 text-white rounded-md font-semibold hover:bg-violet-700 transition"
         >
-          {editingReviewId ? "Update Review" : "Submit Review"}
+          Submit Review
         </button>
       </form>
     </main>
   );
 }
+
 
 
