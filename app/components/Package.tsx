@@ -1,10 +1,15 @@
 // components/ServicesSection.tsx
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, MonitorSmartphone, Paintbrush2, Code2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  MonitorSmartphone,
+  Paintbrush2,
+  Code2,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSwipeable } from "react-swipeable";
 
@@ -32,7 +37,7 @@ const services = [
   },
 ];
 
-export default function ServicesPackage() {
+export default function Package() {
   const [index, setIndex] = useState(0);
 
   const handleNext = () => {
