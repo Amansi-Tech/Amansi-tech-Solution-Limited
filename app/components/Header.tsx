@@ -35,13 +35,13 @@ export default function Header() {
          </div>
 
        <nav className="hidden md:flex md:m-auto space-x-6 font-medium ">
-  <Link href="/" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
+  <Link href="/" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200"  passHref>
     Home
   </Link>
   <Link href="#" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
     About
   </Link>
-  <Link href="/Contact" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
+  <Link href="/contact" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200"  passHref>
     Contact
   </Link>
   <Link href="#" className="hover:scale-90 transform transition duration-300 font-bold hover:text-gray-200">
@@ -75,6 +75,7 @@ export default function Header() {
           <nav className="flex flex-col gap-3 font-medium">
             <Link href="#" className="hover:text-gray-600 transition">Home</Link>
             <Link href="#" className="hover:text-gray-600 transition">About</Link>
+            <Link href="/contact" className="hover:text-gray-600 transition" passHref>Contact</Link>
             <Link href="#" className="hover:text-gray-600 transition">Services</Link>
             <Link href="#" className="hover:text-gray-600 transition">Training</Link>
             <Link href="#" className="hover:text-gray-600 transition">Projects</Link>
