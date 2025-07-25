@@ -19,14 +19,12 @@ export default function ReviewForm() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const router = useRouter();
 
-  // Listen for user authentication
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, user => setCurrentUser(user));
     return unsubscribe;
   }, []);
 
-  // Submit review to Firestore
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rating || !text.trim()) return;
