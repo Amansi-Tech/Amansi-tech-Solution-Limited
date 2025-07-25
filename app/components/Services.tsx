@@ -27,6 +27,7 @@ const Services = () => {
       </div>
 
       <Offer />
+      <ServicesPackage />
     </section>
   )
 }
