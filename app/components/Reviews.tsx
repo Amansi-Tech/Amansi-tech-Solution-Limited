@@ -1,15 +1,12 @@
 "use client";
 
 import { db } from "../../lib/firebase";
-
 import {
   collection,
   addDoc,
-  query,
-  orderBy,
-  onSnapshot,
   Timestamp,
 } from "firebase/firestore";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Rating, RatingStar } from "flowbite-react";
@@ -19,7 +16,17 @@ export default function ReviewForm() {
   const [text, setText] = useState("");
   const [rating, setRating] = useState<number | null>(null);
   const [name, setName] = useState("");
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const router = useRouter();
+
+  // Get the current logged-in user
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,13 +37,13 @@ export default function ReviewForm() {
       rating,
       name: name || "Anonymous",
       createdAt: Timestamp.now(),
+      uid: currentUser?.uid || null, // 🔐 Save user's UID if logged in
     });
 
     setText("");
     setRating(null);
     setName("");
 
-    // Redirect to feedback page after submitting
     router.push("/feedback");
   };
 
@@ -92,6 +99,11 @@ export default function ReviewForm() {
         >
           Submit Review
         </button>
+      </form>
+    </main>
+  );
+}
+
       </form>
     </main>
   );
