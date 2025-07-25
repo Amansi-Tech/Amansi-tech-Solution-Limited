@@ -2,133 +2,157 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { db } from "../../lib/firebase";
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  Timestamp,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
+import { useParams, useRouter } from "next/navigation";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import { Rating, RatingStar, Avatar, Button } from "flowbite-react";
+import { db } from "../../../../lib/firebase";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  Timestamp,
+} from "firebase/firestore";
+import { Rating, RatingStar } from "flowbite-react";
+import { motion } from "framer-motion";
 
-interface Review {
-  id: string;
-  text: string;
-  rating: number;
-  createdAt: Timestamp;
-  name?: string;
-  uid?: string;
-}
-
-export default function AllReviewsPage() {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+export default function EditReviewPage() {
+  const { id } = useParams();
   const router = useRouter();
 
+  const [text, setText] = useState("");
+  const [rating, setRating] = useState<number | null>(null);
+  const [name, setName] = useState("");
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Get logged-in user
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) =>
-      setCurrentUser(user)
-    );
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
     return () => unsubscribe();
   }, []);
 
+  // Fetch review and check access
   useEffect(() => {
-    const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setReviews(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Omit<Review, "id">),
-        }))
-      );
-    });
-    return unsubscribe;
-  }, []);
+    if (!id || !currentUser) return;
 
-  const handleDelete = async (id: string) => {
+    const fetchReview = async () => {
+      try {
+        const reviewRef = doc(db, "reviews", id as string);
+        const reviewSnap = await getDoc(reviewRef);
+
+        if (!reviewSnap.exists()) {
+          setError("Review not found.");
+          return;
+        }
+
+        const review = reviewSnap.data();
+
+        if (review.uid !== currentUser.uid) {
+          setError("Unauthorized access.");
+          return;
+        }
+
+        setText(review.text);
+        setRating(review.rating);
+        setName(review.name || "");
+      } catch (err) {
+        setError("Something went wrong while loading review.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReview();
+  }, [id, currentUser]);
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rating || !text.trim()) return;
+
     try {
-      await deleteDoc(doc(db, "reviews", id));
+      await updateDoc(doc(db, "reviews", id as string), {
+        text: text.trim(),
+        rating,
+        name: name.trim() || "Anonymous",
+        updatedAt: Timestamp.now(),
+      });
+      router.push("/reviews");
     } catch (err) {
-      console.error("Failed to delete review", err);
+      console.error("Failed to update review:", err);
     }
   };
 
+  if (loading) {
+    return <p className="text-center mt-10">Loading...</p>;
+  }
+
+  if (error) {
+    return (
+      <p className="text-center mt-10 text-red-600 font-medium">{error}</p>
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-gray-100 py-10 px-4 flex flex-col items-center text-black">
-      {/* Back Home Button */}
-      <div className="w-full max-w-4xl mb-6 flex justify-start">
-        <Button
-          onClick={() => router.push("/")}
-          color="purple"
-          className="rounded-lg font-medium"
+    <main className="min-h-screen px-4 py-10 bg-gray-100 flex flex-col items-center text-black">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-3xl sm:text-4xl font-bold mb-8 text-violet-700 text-center"
+      >
+        ✏️ Edit Your Review
+      </motion.h1>
+
+      <form
+        onSubmit={handleUpdate}
+        className="w-full max-w-xl bg-white p-6 rounded-xl shadow-lg space-y-5"
+      >
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Your name (optional)"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+        />
+
+        <div>
+          <label className="block mb-2 text-black font-medium">
+            Your Rating:
+          </label>
+          <Rating>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <RatingStar
+                key={n}
+                filled={rating !== null && n <= rating}
+                onClick={() => setRating(n)}
+                className="cursor-pointer"
+              />
+            ))}
+          </Rating>
+        </div>
+
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          required
+          placeholder="Update your review…"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md h-28 resize-none text-black focus:outline-none focus:ring-2 focus:ring-violet-500"
+        />
+
+        <button
+          type="submit"
+          className="w-full py-2 bg-violet-600 text-white rounded-md font-semibold hover:bg-violet-700 transition"
         >
-          ← Back Home
-        </Button>
-      </div>
-
-      <h1 className="text-4xl font-extrabold mb-8 text-violet-700 text-center">
-        What Users Are Saying 💬
-      </h1>
-
-      <div className="w-full max-w-4xl space-y-6">
-        {reviews.length === 0 ? (
-          <p className="text-center text-gray-500 text-lg">No reviews yet.</p>
-        ) : (
-          reviews.map((r) => (
-            <div
-              key={r.id}
-              className="relative bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <Avatar
-                    placeholderInitials={(r.name || "A")[0]}
-                    rounded
-                    size="md"
-                  />
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      {r.name || "Anonymous"}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {r.createdAt.toDate().toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-
-                <Rating size="sm">
-                  {[...Array(5)].map((_, i) => (
-                    <RatingStar key={i} filled={i < r.rating} />
-                  ))}
-                </Rating>
-              </div>
-
-              <p className="text-gray-700 text-base">{r.text}</p>
-
-              {/* Show delete if user is the owner */}
-              {currentUser?.uid === r.uid && (
-                <div className="absolute top-4 right-4">
-                  <button
-                    onClick={() => handleDelete(r.id)}
-                    className="text-sm text-red-600 hover:underline"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
+          Save Changes
+        </button>
+      </form>
     </main>
   );
 }
+
 
 
 
