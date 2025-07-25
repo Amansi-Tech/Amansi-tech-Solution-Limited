@@ -10,12 +10,11 @@ import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCkSGqjWWojfLZD1A5Cl5ABlvhb6ZZTCCk",
-  authDomain: "amansi-tech.firebaseapp.com",
-  projectId: "project-39eda",
-  storageBucket: "project-39eda.firebasestorage.app",
-  messagingSenderId: "322454462858",
-  appId: "1:322454462858:web:e480b551893f142d456873",
-  measurementId: "G-JVF8RL9TZJ"
+  authDomain: "amansi-tech.firebaseapp.com", // ✅ Replace with actual
+  projectId: "amansi-tech",
+  storageBucket: "amansi-tech.appspot.com",
+  messagingSenderId: "XXXXXXXXXXX",
+  appId: "1:XXXXXXXXXXXX:web:XXXXXXXXXXXXXX",
 };
 
 const app = initializeApp(firebaseConfig);
