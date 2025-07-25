@@ -65,8 +65,8 @@ export default function Hero() {
 
             {/* <p className="text-lg md:text-xl mb-6" data-aos="fade-up-right">Where imagination becomes reality through programing.</p> */}
             <Link
-            href='/Contact'
-            >
+            href='/contact'
+            passHref >
             <button className="bg-violet-600 hover:bg-violet-700 px-6 py-3 rounded text-white font-semibold" data-aos="fade-right">
               Contact us
             </button>
