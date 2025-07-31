@@ -1,8 +1,18 @@
 "use client";
 
 import { MessageCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function WhatsAppButton() {
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    // Avoid duplication from hydration mismatch
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) return null;
+
   return (
     <a
       href="https://wa.me/08023101101"
