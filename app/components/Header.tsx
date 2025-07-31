@@ -78,7 +78,7 @@ export default function Header() {
             <Link href="/contact" className="hover:text-gray-600 transition">Contact</Link>
             <Link href="/projects" className="hover:text-gray-600 transition">Projects</Link>
             <Link href="/contact">
-              <button className="mt-2 bg-white text-violet font-bold pr-[2px] pl-[5px] rounded hover:bg-violet-100 transition w-full text-left">
+              <button className="mt-2 bg-white text-violet-600 font-bold pr-[2px] pl-[5px] rounded hover:bg-violet-100 transition w-full text-left">
                 Get in touch
               </button>
             </Link>

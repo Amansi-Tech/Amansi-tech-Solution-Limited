@@ -190,7 +190,7 @@ export default function AboutPage() {
           <form
             action="https://formsubmit.co/p.star.chinedu@gmail.com"
             method="POST"
-            className="bg-white p-6 rounded-xl shadow space-y-4 max-w-xl mx-auto"
+            className="bg-white p-6 rounded-xl shadow space-y-4 max-w-xl mx-auto text-black"
           >
             <input type="hidden" name="_captcha" value="false" />
             <input
