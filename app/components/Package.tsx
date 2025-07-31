@@ -129,7 +129,7 @@ export default function ServicesSection() {
         </div>
 
         {/* 👇 Desktop Grid */}
-        <div className="hidden sm:grid grid-cols-1 md:grid-cols-3 gap-[5rem] max-w-6xl mx-auto mt-[-5rem} ml-[-9px] p-[16px]">
+        <div className="hidden sm:grid grid-cols-1 md:grid-cols-3 gap-[5rem] max-w-6xl mx-auto mt-[-5rem} ml-[-7px] p-[16px]">
           {services.map((service, i) => (
             <Link key={i} href={service.href}>
               <motion.div
