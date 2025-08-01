@@ -1,27 +1,27 @@
 "use client";
 
-import { MessageCircle } from "lucide-react";
+import { Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function WhatsAppButton() {
-  const [hasMounted, setHasMounted] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Avoid duplication from hydration mismatch
-    setHasMounted(true);
+    // Prevent double rendering on hydration
+    setIsClient(true);
   }, []);
 
-  if (!hasMounted) return null;
+  if (!isClient) return null;
 
   return (
     <a
-      href="https://wa.me/08023101101"
+      href="https://wa.me/+2348023101101"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"
-      className="fixed bottom-[5rem] left-6 z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-transform transform hover:scale-105 active:scale-95"
+      className="fixed bottom-6 left-4  z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-transform  "
     >
-      <MessageCircle className="w-6 h-6" />
+      <Phone className="w-6 h-6 text-white" />
     </a>
   );
 }

@@ -22,19 +22,17 @@ export default function Header() {
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/60 shadow backdrop-blur text-white'
-          : 'bg-violet-600 pt-[1px] pb-[1px] text-white'
+          ? 'bg-white/60 shadow backdrop-blur text-violet-400'
+          : 'bg-violet-600 pt-[3px] pb-[3px] text-white'
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 py-2">
         {/* Logo Section */}
         <div className="flex items-center gap-2">
-          {/* Optional Logo Placeholder */}
+      
           {/* <Image src="/logo.svg" alt="Logo" width={40} height={40} /> */}
-          <h1 className="text-[18px] font-bold leading-tight">
-            Amansi-technologies
-            <br />
-            &Graphs-Limited
+          <h1 className="text-[20px] font-bold leading-tight">
+            Amansi-tech
           </h1>
         </div>
 

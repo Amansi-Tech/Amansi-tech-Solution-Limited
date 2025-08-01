@@ -72,7 +72,7 @@ export default function ServicesSection() {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                transition={{ duration: 0.4, ease: "easeInOut" }}
+                transition={{ duration: 2, ease: "easeInOut" }}
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.2}
@@ -80,7 +80,7 @@ export default function ServicesSection() {
                   if (info.offset.x < -50) handleNext();
                   else if (info.offset.x > 50) handlePrev();
                 }}
-                className="bg-white p-6 rounded-xl shadow-lg text-center cursor-grab active:cursor-grabbing transform hover:scale-105 hover:ring-2 hover:ring-violet-200 hover:bg-violet-50"
+                className="bg-white p-6 rounded-xl shadow-lg text-center cursor-grab active:cursor-grabbing transform hover:scale-105 hover:ring-2 hover:ring-violet-200 hover:bg-violet-50 mb-[2rem]"
               >
                 <Link href={href}>
                   <div>
@@ -97,7 +97,6 @@ export default function ServicesSection() {
             </AnimatePresence>
           </div>
 
-          {/* 🔘 Dots */}
           <div className="flex gap-2 mt-4">
             {services.map((_, i) => (
               <span
@@ -107,7 +106,7 @@ export default function ServicesSection() {
             ))}
           </div>
 
-          {/* ⬅️➡️ Arrows */}
+       
           <div className="flex justify-between w-full mt-4 px-4">
             <button onClick={handlePrev} className="p-2 rounded-full bg-violet-100 hover:bg-violet-200" aria-label="Previous">
               <ChevronLeft className="w-5 h-5 text-violet-600" />
@@ -117,18 +116,10 @@ export default function ServicesSection() {
             </button>
           </div>
 
-          {/* WhatsApp Button */}
-          <a
-            href="https://wa.me/2348100000000"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg"
-          >
-            <MessageCircle className="w-6 h-6" />
-          </a>
+
         </div>
 
-        {/* 👇 Desktop Grid */}
+      
         <div className="hidden sm:grid grid-cols-1 md:grid-cols-3 gap-[5rem] max-w-6xl mx-auto mt-[-5rem} ml-[-7px] p-[16px]">
           {services.map((service, i) => (
             <Link key={i} href={service.href}>

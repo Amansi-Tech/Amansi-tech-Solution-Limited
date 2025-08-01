@@ -7,28 +7,28 @@ import {
   Mail,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { FaGithub, FaInstagram } from "react-icons/fa";
 
 const team = [
   {
     name: "Emmanuel",
     role: "CEO",
-    github: "https://github.com/emmanuel",
-    linkedin: "https://linkedin.com/in/emmanuel",
+    github: "https://github.com/Amansi-Tech",
+    instagram: "https://www.instagram.com/amansitech?igsh=ZWdobjMwNm1za2Rr",
     image: "https://randomuser.me/api/portraits/men/10.jpg",
   },
   {
     name: "Ifeanyi",
     role: "Lead Developer",
     github: "https://github.com/ifeanyi",
-    linkedin: "https://linkedin.com/in/ifeanyi",
+    instagram: "https://www.instagram.com/biganyii?igsh=MWt2ZjUOMWhibWNs",
     image: "https://randomuser.me/api/portraits/men/20.jpg",
   },
   {
     name: "Igwebe",
     role: "Business Manager",
     github: "https://github.com/igwebe",
-    linkedin: "https://linkedin.com/in/igwebe",
+    instagram: "https://www.instagram.com/eigig_resources0601/profilecard/?igsh=MXIxcGoyNXJ1YTZ4MQ",
     image: "https://randomuser.me/api/portraits/men/30.jpg",
   },
 ];
@@ -80,7 +80,7 @@ export default function AboutPage() {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {team.map(({ name, role, github, linkedin, image }, i) => (
+            {team.map(({ name, role, github, instagram, image }, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
@@ -98,12 +98,12 @@ export default function AboutPage() {
                   <p className="text-violet-600 text-sm mb-3">{role}</p>
                   <div className="flex justify-center gap-4 text-xl text-violet-600">
                     <a
-                      href={linkedin}
+                      href={instagram}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:text-blue-500"
                     >
-                      <FaLinkedin />
+                <FaInstagram />
                     </a>
                     <a
                       href={github}

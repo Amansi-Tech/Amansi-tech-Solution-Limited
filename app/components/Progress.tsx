@@ -11,8 +11,8 @@ type CircleCfg = {
 };
 
 const CIRCLES: CircleCfg[] = [
-  { label: "Imagination", speed: 30, end: 60, colors: ["#6b4fd1", "#7534eeff"] },
-  { label: "Transparency", speed: 50, end: 70, colors: ["#6c5fe0ff", "#6d1febff"] },
+  { label: "Imagination", speed: 30, end: 90, colors: ["#6b4fd1", "#7534eeff"] },
+  { label: "Transparency", speed: 50, end: 85, colors: ["#6c5fe0ff", "#6d1febff"] },
   { label: "Reliable", speed: 70, end: 80, colors: ["#4220d8ff", "#441fe6ff"] },
 ];
 

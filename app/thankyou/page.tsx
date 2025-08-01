@@ -9,7 +9,7 @@ export default function ThankYouPage() {
     <div
       className="min-h-screen bg-cover bg-center flex items-center justify-center px-4"
       style={{
-        backgroundImage: "url('/bg-3.jpg')", // Replace with your actual image path
+        backgroundImage: "url('/bg-3.jpg')", 
       }}
     >
       <motion.div

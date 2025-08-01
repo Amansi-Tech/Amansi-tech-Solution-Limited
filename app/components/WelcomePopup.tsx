@@ -53,7 +53,7 @@ const WelcomePopup = () => {
               onClick={closePopup}
               className="absolute top-4 right-4 text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition cursor-pointer"
             >
-              <X className="w-6 h-6 text-violet-600" />
+              <X className="w-[2rem] h-6 text-violet-600" />
             </button>
 
 
@@ -75,7 +75,8 @@ const WelcomePopup = () => {
                 </h1>
                 <hr className="border-violet-400 dark:border-violet-600 w-full" />
                 <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base leading-relaxed">
-                  Saw your <span className="font-semibold">IP address</span> and decided to welcome you personally.
+                  Is welcoming you <span className="font-semibold">Personally</span> to our amazing site explore and write a review about your
+                   experience.
                 </p>
                 <div className="flex items-center gap-2">
                   <motion.span

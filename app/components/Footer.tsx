@@ -51,7 +51,7 @@ export default function Footer() {
             <Link href="https://twitter.com" aria-label="Twitter" className="hover:text-white">
               <FaTwitter size={20} />
             </Link>
-            <Link href="https://facebook.com" aria-label="Facebook" className="hover:text-white">
+            <Link href="https://facebook.com/profile.php?.id=61578831599809" aria-label="Facebook" className="hover:text-white">
               <FaFacebookF size={20} />
             </Link>
             <Link href="https://linkedin.com" aria-label="LinkedIn" className="hover:text-white">
