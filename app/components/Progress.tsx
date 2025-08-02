@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 type CircleCfg = {
   label: string;
@@ -45,12 +46,12 @@ function Circle({ cfg, inView }: { cfg: CircleCfg; inView: boolean }) {
 
   return (
     <motion.div
-      className="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 p-2"
+      className="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 p-3"
       initial={{ opacity: 0, y: 20 }}
-      animate={inView ? { opacity: 0.95, y: 0 } : {}}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6 }}
     >
-      <div className="bg-white/20 backdrop-blur-lg border border-white/30 rounded-xl shadow-lg p-4 sm:p-6 text-center">
+      <div className="bg-white/20 backdrop-blur-lg border border-white/30 rounded-xl shadow-lg p-6 text-center">
         <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[120px] mx-auto">
           <defs>
             <linearGradient id={`g-${label}`} x1="0" x2="1" y1="0" y2="0">
@@ -112,15 +113,25 @@ export default function ProgressPage() {
   }, []);
 
   return (
-    <div
-      ref={ref}
-      className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center relative z-10"
-      style={{
-        backgroundImage: "url('/bg-2.jpg')",
-        backgroundColor: "rgba(127, 20, 226, 0.4)",
-      }}
-    >
-      <div className="flex flex-wrap justify-center gap-6 max-w-6xl w-full">
+    <div className="relative min-h-screen flex items-center justify-center px-4">
+      {/* Background Image */}
+      <Image
+        src="/bg-2.jpg"
+        alt="background"
+        fill
+        quality={80}
+        priority
+        className="object-cover object-center z-0"
+      />
+
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-800/60 to-indigo-900/60 backdrop-blur-md z-10" />
+
+      {/* Content */}
+      <div
+        ref={ref}
+        className="relative z-20 flex flex-wrap justify-center gap-6 max-w-6xl w-full"
+      >
         {CIRCLES.map((cfg) => (
           <Circle key={cfg.label} cfg={cfg} inView={inView} />
         ))}
@@ -128,4 +139,3 @@ export default function ProgressPage() {
     </div>
   );
 }
-

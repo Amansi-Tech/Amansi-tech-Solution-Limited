@@ -1,209 +1,146 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { db, auth } from "../../../lib/firebase";
 import {
-  Timestamp,
-  addDoc,
   collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  orderBy,
+  getDocs,
   query,
-  updateDoc,
+  orderBy,
+  where,
+  Timestamp,
 } from "firebase/firestore";
-import { db, auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import ReviewCard from "../../components/ReviewCard";
+import StarSummaryChart from "../../components/StarSummaryChart";
+import ExportCSVButton from "../../components/ExportCSVButton";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
-import { Trash2, Pencil, Send } from "lucide-react";
-import Image from "next/image";
+import { Loader2 } from "lucide-react";
 
-interface Reply {
-  id?: string;
-  uid: string;
-  name: string;
-  text: string;
-  createdAt: Timestamp;
-  parentId?: string;
-  edited?: boolean;
-  avatar?: string;
-}
-
-interface Props {
-  reviewId: string;
-}
-
-export default function ReplySection({ reviewId }: Props) {
-  const [replies, setReplies] = useState<Reply[]>([]);
-  const [input, setInput] = useState("");
-  const [parentId, setParentId] = useState<string | null>(null);
-  const [editingReply, setEditingReply] = useState<Reply | null>(null);
-  const currentUser = auth.currentUser;
-  const adminUID = "HE2BB7Eo0jUtQZqs7mhKqa4FM0t1";
+export default function FeedbackPage() {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [filteredReviews, setFilteredReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [selectedStars, setSelectedStars] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<"today" | "week" | "all">("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    const q = query(
-      collection(db, "reviews", reviewId, "replies"),
-      orderBy("createdAt", "asc")
-    );
-
-    const unsub = onSnapshot(q, (snapshot) => {
-      const data: Reply[] = snapshot.docs.map((doc) => {
-        const replyData = doc.data() as Omit<Reply, "id">;
-        return {
-          id: doc.id,
-          ...replyData,
-        };
-      });
-      setReplies(data);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
     });
 
-    return () => unsub();
-  }, [reviewId]);
+    return () => unsubscribe();
+  }, []);
 
-  const handleReply = async () => {
-    if (!input.trim() || !currentUser) return;
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setReviews(data);
+        setFilteredReviews(data);
+      } catch (err) {
+        toast.error("Error fetching reviews");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-   const replyData: Omit<Reply, "id"> = {
-  uid: currentUser.uid,
-  name: currentUser.displayName || "Anonymous",
-  text: input.trim(),
-  createdAt: Timestamp.now(),
-  parentId: parentId ?? undefined, // fallback if null
-  avatar: currentUser.photoURL || undefined,
-};
+    fetchReviews();
+  }, []);
 
+  useEffect(() => {
+    const now = new Date();
+    const oneDayAgo = new Date(now);
+    oneDayAgo.setDate(now.getDate() - 1);
 
-    try {
-      await addDoc(collection(db, "reviews", reviewId, "replies"), replyData);
-      toast.success("Reply added");
-      setInput("");
-      setParentId(null);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to reply");
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(now.getDate() - 7);
+
+    let filtered = [...reviews];
+
+    if (selectedStars !== null) {
+      filtered = filtered.filter((review) => review.stars === selectedStars);
     }
-  };
 
-  const handleEdit = async () => {
-    if (!editingReply || !input.trim()) return;
-
-    try {
-      const docRef = doc(db, "reviews", reviewId, "replies", editingReply.id!);
-      await updateDoc(docRef, {
-        text: input.trim(),
-        edited: true,
-      });
-      toast.success("Reply updated");
-      setEditingReply(null);
-      setInput("");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update");
+    if (selectedDate === "today") {
+      filtered = filtered.filter((review) => review.createdAt?.toDate() >= oneDayAgo);
+    } else if (selectedDate === "week") {
+      filtered = filtered.filter((review) => review.createdAt?.toDate() >= oneWeekAgo);
     }
-  };
 
-  const handleDelete = async (id: string) => {
-    const confirmed = window.confirm("Delete this reply?");
-    if (!confirmed) return;
-
-    try {
-      await deleteDoc(doc(db, "reviews", reviewId, "replies", id));
-      toast.success("Reply deleted");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete");
+    if (searchTerm) {
+      filtered = filtered.filter((review) =>
+        review.text.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
-  };
 
-  const renderReplies = (parent: string | null = null, level = 0) => {
-    return replies
-      .filter((r) => r.parentId === parent)
-      .map((reply) => (
-        <motion.div
-          key={reply.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`ml-${level * 4} mb-2 p-2 bg-white/5 rounded-lg`}
-        >
-          <div className="flex items-start gap-2">
-            <Image
-              src={reply.avatar || "/user.png"}
-              alt="avatar"
-              width={30}
-              height={30}
-              className="rounded-full"
-            />
-            <div className="flex-1">
-              <div className="flex justify-between items-center">
-                <p className="text-sm font-semibold">{reply.name}</p>
-                <div className="flex gap-1">
-                  {(reply.uid === currentUser?.uid || currentUser?.uid === adminUID) && (
-                    <>
-                      <button
-                        onClick={() => {
-                          setEditingReply(reply);
-                          setInput(reply.text);
-                        }}
-                        title="Edit"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button onClick={() => handleDelete(reply.id!)} title="Delete">
-                        <Trash2 size={14} />
-                      </button>
-                    </>
-                  )}
-                  <button onClick={() => setParentId(reply.id!)} title="Reply">
-                    <Send size={14} />
-                  </button>
-                </div>
-              </div>
-              <p className="text-sm mt-1">{reply.text}</p>
-              {reply.edited && (
-                <span className="text-xs text-gray-400 italic">edited</span>
-              )}
-            </div>
-          </div>
-          {/* Nested Replies */}
-          {renderReplies(reply.id, level + 1)}
-        </motion.div>
-      ));
-  };
+    setFilteredReviews(filtered);
+  }, [selectedStars, selectedDate, searchTerm, reviews]);
 
   return (
-    <div className="mt-4">
-      <h4 className="text-lg font-bold text-white">Replies</h4>
-      <div className="space-y-2 mt-2">{renderReplies()}</div>
-
-      <div className="mt-4 flex gap-2">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={
-            editingReply ? "Edit your reply..." : parentId ? "Replying..." : "Write a reply..."
-          }
-          className="w-full rounded-lg p-2 bg-black/20 text-white border border-white/10"
-        />
-        <button
-          onClick={editingReply ? handleEdit : handleReply}
-          className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg"
-        >
-          {editingReply ? "Save" : "Reply"}
-        </button>
+    <div className="p-4 md:p-10 space-y-6 max-w-6xl mx-auto">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold">User Feedback</h1>
+        <ExportCSVButton reviews={filteredReviews} />
       </div>
 
-      {(parentId || editingReply) && (
-        <button
-          onClick={() => {
-            setParentId(null);
-            setEditingReply(null);
-            setInput("");
-          }}
-          className="text-sm text-gray-400 mt-2 hover:underline"
-        >
-          Cancel
-        </button>
+      <StarSummaryChart reviews={filteredReviews} />
+
+      <div className="flex flex-wrap gap-4 justify-between">
+        <div className="flex gap-2">
+          <button onClick={() => setSelectedStars(null)} className="px-3 py-1 rounded border">All</button>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              onClick={() => setSelectedStars(star)}
+              className={`px-3 py-1 rounded border ${selectedStars === star ? "bg-blue-500 text-white" : ""}`}
+            >
+              {star}★
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          {["today", "week", "all"].map((option) => (
+            <button
+              key={option}
+              onClick={() => setSelectedDate(option as "today" | "week" | "all")}
+              className={`px-3 py-1 rounded border ${selectedDate === option ? "bg-green-500 text-white" : ""}`}
+            >
+              {option.charAt(0).toUpperCase() + option.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        <input
+          type="text"
+          placeholder="Search reviews..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border p-2 rounded w-full md:w-64"
+        />
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center items-center h-32">
+          <Loader2 className="animate-spin w-8 h-8 text-gray-600" />
+        </div>
+      ) : filteredReviews.length > 0 ? (
+        <div className="grid gap-6">
+          {filteredReviews.map((review) => (
+            <ReviewCard key={review.id} review={review} user={user} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-gray-500 mt-10">No reviews found.</p>
       )}
     </div>
   );
