@@ -118,7 +118,7 @@ export default function ReviewForm() {
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow max-w-xl mx-auto space-y-4"
+      className="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow max-w-xl mt-[2rem] mb-[2rem] space-y-4"
     >
       {/* USER INFO */}
       <motion.div

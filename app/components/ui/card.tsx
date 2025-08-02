@@ -1,22 +1,18 @@
 // components/ui/card.tsx
-import * as React from "react";
-import { cn } from "../../../lib/utils";
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
+import { cn } from "@/lib/utils"; // or remove if not using cn()
 
-const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) => (
+export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
     <div
-      ref={ref}
-      className={cn(
-        "rounded-lg border bg-white p-6 shadow-md dark:bg-gray-900",
-        className
-      )}
+      className={cn("rounded-lg border bg-white text-black shadow-sm", className)}
       {...props}
     />
-  )
-);
+  );
+}
 
-Card.displayName = "Card";
-
-export { Card };
+export function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("p-4", className)} {...props} />
+  );
+}

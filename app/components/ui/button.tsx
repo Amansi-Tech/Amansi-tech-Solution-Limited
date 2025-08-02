@@ -2,7 +2,7 @@
 import React from "react";
 import { cn } from "../../../lib/utils";
 
-export function SubmitButton({ label = "Submit", onClick, className }: {
+export function Button({ label = "Submit", onClick, className }: {
   label?: string;
   onClick?: () => void;
   className?: string;

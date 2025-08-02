@@ -1,50 +1,32 @@
 "use client";
 
-import { useMemo } from "react";
-import { Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+interface Review {
+  stars: number;
+}
 
-type StarSummaryChartProps = {
-  reviews: { rating: number }[];
-};
+interface Props {
+  reviews: Review[];
+}
 
-export default function StarSummaryChart({ reviews }: StarSummaryChartProps) {
-  const starCounts = useMemo(() => {
-    const counts = [0, 0, 0, 0, 0];
-    reviews.forEach((r) => {
-      if (r.rating >= 1 && r.rating <= 5) {
-        counts[r.rating - 1]++;
-      }
-    });
-    return counts;
-  }, [reviews]);
-
-  const data = {
-    labels: ["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"],
-    datasets: [
-      {
-        label: "Review Count",
-        data: starCounts,
-        backgroundColor: "#7c3aed",
-      },
-    ],
-  };
+export const StarSummaryChart = ({ reviews }: Props) => {
+  const starCounts = [1, 2, 3, 4, 5].map((star) => ({
+    star,
+    count: reviews.filter((r) => r.stars === star).length,
+  }));
 
   return (
-    <div className="w-full max-w-xl mx-auto bg-white dark:bg-zinc-900 p-4 rounded shadow">
-      <h2 className="text-lg font-semibold mb-2 text-zinc-800 dark:text-zinc-200">
-        Star Rating Summary
-      </h2>
-      <Bar data={data} />
+    <div className="bg-white/10 p-4 rounded-2xl shadow-md mb-6">
+      <h2 className="text-lg font-semibold mb-4 text-white">Star Distribution</h2>
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={starCounts}>
+          <XAxis dataKey="star" stroke="#ccc" />
+          <YAxis stroke="#ccc" />
+          <Tooltip />
+          <Bar dataKey="count" fill="#a78bfa" />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
-}
+};

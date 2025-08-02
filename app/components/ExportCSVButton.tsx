@@ -1,51 +1,47 @@
 "use client";
 
-
 import { saveAs } from "file-saver";
 
-interface ReviewType {
+interface Review {
   id: string;
   uid: string;
   name: string;
-  email: string;
-  rating: number;
   text: string;
-  createdAt: any;
+  stars: number;
+  createdAt: {
+    seconds: number;
+    nanoseconds: number;
+  };
 }
 
-type Props = {
-  reviews: ReviewType[];
-};
+interface Props {
+  reviews: Review[];
+}
 
-
-export default function ExportCSVButton({ reviews }: Props) {
+export const ExportCSVButton = ({ reviews }: Props) => {
   const exportToCSV = () => {
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      ["Name,Email,Rating,Review,CreatedAt"]
-        .concat(
-          reviews.map(
-            (r) =>
-              `${r.name},"${r.email}",${r.rating},"${r.text.replace(
-                /"/g,
-                '""'
-              )}",${new Date(r.createdAt?.seconds * 1000).toLocaleString()}`
-          )
-        )
-        .join("\n");
+    const headers = ["Name", "Text", "Stars", "Date"];
+    const rows = reviews.map((review) => [
+      review.name,
+      review.text,
+      review.stars.toString(),
+      new Date(review.createdAt.seconds * 1000).toLocaleString(),
+    ]);
 
-    const blob = new Blob([decodeURIComponent(encodeURI(csvContent))], {
-      type: "text/csv;charset=utf-8;",
-    });
+    const csvContent = [headers, ...rows]
+      .map((e) => e.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "reviews.csv");
   };
 
   return (
     <button
       onClick={exportToCSV}
-      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+      className="bg-green-600 px-4 py-2 rounded text-white hover:bg-green-700 transition"
     >
-      Download CSV
+      Export CSV
     </button>
   );
-}
+};
