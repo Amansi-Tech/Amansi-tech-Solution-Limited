@@ -53,7 +53,7 @@ const WelcomePopup = () => {
               onClick={closePopup}
               className="absolute top-4 right-4 text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition cursor-pointer"
             >
-              <X className="w-[2rem] h-6 text-violet-600" />
+              <X className="w-[3rem] h-6 text-violet-600" />
             </button>
 
 
