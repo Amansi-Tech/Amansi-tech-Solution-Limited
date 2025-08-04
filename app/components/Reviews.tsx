@@ -12,10 +12,17 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db, auth } from "../../lib/firebase";
-import { onAuthStateChanged, User } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  User,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { FcGoogle } from "react-icons/fc";
 
 interface ReviewData {
   id?: string;
@@ -35,20 +42,7 @@ export default function ReviewForm() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const router = useRouter();
 
-  // Prevent navigation if form is incomplete
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (rating === 0 || review.trim() === "") {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [rating, review]);
-
-  // Detect logged-in user and existing review
+  // Handle auth state
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -70,11 +64,47 @@ export default function ReviewForm() {
         });
 
         return () => unsubscribeSnapshot();
+      } else {
+        setUser(null);
       }
     });
 
     return () => unsubscribeAuth();
   }, []);
+
+  // Warn before leaving if unsaved
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (rating === 0 || review.trim() === "") {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [rating, review]);
+
+  const handleSignIn = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      toast.success("Signed in successfully!");
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+      toast.error("Failed to sign in.");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      toast.success("Logged out successfully!");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Failed to logout.");
+    }
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -87,7 +117,6 @@ export default function ReviewForm() {
 
     try {
       if (existingReviewId) {
-        // Update existing review
         await updateDoc(doc(db, "reviews", existingReviewId), {
           rating,
           review,
@@ -95,7 +124,6 @@ export default function ReviewForm() {
         });
         toast.success("Your review was updated successfully!");
       } else {
-        // Add new review
         await addDoc(collection(db, "reviews"), {
           uid: user.uid,
           name: user.displayName || "Anonymous",
@@ -115,6 +143,28 @@ export default function ReviewForm() {
     }
   };
 
+  if (!user) {
+    return (
+      <motion.div
+        className="max-w-xl mx-auto p-8 text-center bg-white dark:bg-[#111] shadow-xl rounded-2xl"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <h2 className="text-2xl font-bold text-violet-600 mb-6">
+          Sign in to leave a review
+        </h2>
+        <button
+          onClick={handleSignIn}
+          className="flex items-center gap-3 justify-center bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-6 py-3 rounded-lg w-full font-semibold shadow transition"
+        >
+          <FcGoogle className="text-2xl" />
+          Sign in with Google
+        </button>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       className="max-w-2xl mx-auto p-6 bg-white dark:bg-[#111] shadow-xl rounded-2xl"
@@ -122,12 +172,19 @@ export default function ReviewForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <h2 className="text-2xl font-bold text-violet-600 mb-4 text-center">
-        {existingReviewId ? "Update Your Review" : "Leave a Review"}
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-violet-600">
+          {existingReviewId ? "Update Your Review" : "Leave a Review"}
+        </h2>
+        <button
+          onClick={handleLogout}
+          className="text-sm text-red-500 hover:underline"
+        >
+          Logout
+        </button>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Rating */}
         <div>
           <label className="block text-violet-700 font-semibold mb-2">
             Star Rating:
@@ -148,7 +205,6 @@ export default function ReviewForm() {
           </div>
         </div>
 
-        {/* Review textarea */}
         <div>
           <label className="block text-violet-700 font-semibold mb-2">
             Your Review:
@@ -162,7 +218,6 @@ export default function ReviewForm() {
           />
         </div>
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={isSubmitting}
@@ -180,4 +235,3 @@ export default function ReviewForm() {
     </motion.div>
   );
 }
-
