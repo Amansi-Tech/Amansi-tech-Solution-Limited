@@ -3,197 +3,244 @@
 import {
   collection,
   addDoc,
+  serverTimestamp,
   onSnapshot,
-  doc,
-  updateDoc,
-  deleteDoc,
   query,
   orderBy,
-  Timestamp,
+  deleteDoc,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
-import { useEffect, useState } from "react";
 import { db } from "../../lib/firebase";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { Trash, Pencil, MessageCircleReply } from "lucide-react";
 
-type Props = {
-  reviewId: string;
-  userId?: string;
-  userName?: string;
-  isAdmin?: boolean;
-};
-
-type Reply = {
+interface Reply {
   id: string;
   uid: string;
   name: string;
   text: string;
-  createdAt: Timestamp;
+  parentId?: string | null;
+  createdAt?: any;
   edited?: boolean;
-};
+}
 
-export default function ReplySection({
-  reviewId,
-  userId,
-  userName,
-  isAdmin = false,
-}: Props) {
+interface Props {
+  reviewId: string;
+  userId?: string;
+  userName?: string;
+  adminUid: string;
+  isAdmin: boolean;
+}
+
+export default function ReplySection({ reviewId, userId, userName, adminUid, isAdmin }: Props) {
   const [replies, setReplies] = useState<Reply[]>([]);
-  const [newReply, setNewReply] = useState("");
+  const [replyText, setReplyText] = useState<string>("");
+  const [parentId, setParentId] = useState<string | null>(null);
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
-  const [editedText, setEditedText] = useState("");
+  const [editingText, setEditingText] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const replyInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const repliesRef = collection(db, "reviews", reviewId, "replies");
 
   useEffect(() => {
-    const q = query(
-      collection(db, "reviews", reviewId, "replies"),
-      orderBy("createdAt", "asc")
-    );
-
+    const q = query(repliesRef, orderBy("createdAt", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetchedReplies: Reply[] = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...(doc.data() as Omit<Reply, "id">),
-      }));
+        ...doc.data(),
+      })) as Reply[];
       setReplies(fetchedReplies);
+      setLoading(false);
     });
-
     return () => unsubscribe();
   }, [reviewId]);
 
-  const handleSubmit = async () => {
-    if (!newReply.trim() || !userId || !userName) return;
+  useEffect(() => {
+    if (parentId && replyInputRef.current) {
+      replyInputRef.current.focus();
+    }
+  }, [parentId]);
+
+  const handleReply = async () => {
+    const text = replyText.trim();
+    if (!userId || !userName) return toast.error("Please log in to reply.");
+    if (!text) return toast.error("Reply cannot be empty.");
+    if (text.length > 1000) return toast.error("Reply is too long.");
 
     try {
-      await addDoc(collection(db, "reviews", reviewId, "replies"), {
+      await addDoc(repliesRef, {
         uid: userId,
         name: userName,
-        text: newReply.trim(),
-        createdAt: Timestamp.now(),
+        text,
+        parentId: parentId || null,
+        createdAt: serverTimestamp(),
         edited: false,
       });
-      setNewReply("");
-      toast.success("Reply added");
-    } catch (error) {
-      console.error("Error submitting reply:", error);
-      toast.error("Failed to add reply");
-    }
-  };
-
-  const handleEdit = async (id: string) => {
-    if (!editedText.trim()) return;
-
-    try {
-      const replyRef = doc(db, "reviews", reviewId, "replies", id);
-      await updateDoc(replyRef, {
-        text: editedText.trim(),
-        edited: true,
-      });
-      setEditingReplyId(null);
-      toast.success("Reply updated");
-    } catch (error) {
-      console.error("Error updating reply:", error);
-      toast.error("Failed to update reply");
+      setReplyText("");
+      setParentId(null);
+    } catch {
+      toast.error("Failed to send reply.");
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteDoc(doc(db, "reviews", reviewId, "replies", id));
-      toast.success("Reply deleted");
-    } catch (error) {
-      console.error("Error deleting reply:", error);
-      toast.error("Failed to delete reply");
+      await deleteDoc(doc(repliesRef, id));
+    } catch {
+      toast.error("Failed to delete reply.");
     }
   };
 
-  return (
-    <div className="space-y-4">
-      {replies.map((reply) => {
-        const canModify = userId === reply.uid || isAdmin;
+  const handleEdit = (id: string, text: string) => {
+    setEditingReplyId(id);
+    setEditingText(text);
+  };
+
+  const saveEdit = async (id: string) => {
+    const newText = editingText.trim();
+    if (!newText) return toast.error("Reply cannot be empty.");
+    if (newText.length > 1000) return toast.error("Reply too long.");
+
+    try {
+      await updateDoc(doc(repliesRef, id), {
+        text: newText,
+        edited: true,
+      });
+      setEditingReplyId(null);
+      setEditingText("");
+    } catch {
+      toast.error("Failed to save changes.");
+    }
+  };
+
+  const renderReplies = (parentId: string | null = null, depth = 0) =>
+    replies
+      .filter((r) => r.parentId === parentId)
+      .map((reply) => {
+        const children = replies.filter((r) => r.parentId === reply.id);
+        const canEdit = reply.uid === userId || isAdmin;
 
         return (
           <motion.div
             key={reply.id}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white dark:bg-zinc-800 p-3 rounded-xl shadow"
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.2 }}
+            style={{ marginLeft: `${depth * 1.5}rem` }}
+            className="mt-2 bg-gray-100 dark:bg-gray-800 p-3 rounded-lg"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold uppercase">
-                {reply.name?.charAt(0) ?? "?"}
-              </div>
-              <div className="text-sm font-medium">{reply.name}</div>
-              <div className="text-xs text-gray-400 ml-auto">
-                {reply.createdAt?.toDate().toLocaleString()}
+            <div className="flex justify-between items-center">
+              <div className="text-sm font-semibold">
+                {reply.name}{" "}
+                {reply.createdAt?.toDate
+                  ? `· ${reply.createdAt.toDate().toLocaleString()}`
+                  : "· Sending..."}{" "}
                 {reply.edited && (
-                  <span className="ml-1 text-blue-500">(edited)</span>
+                  <span className="text-xs text-yellow-600">(edited)</span>
                 )}
+              </div>
+              <div className="flex gap-2">
+                {canEdit && (
+                  <>
+                    <button
+                      onClick={() => handleEdit(reply.id, reply.text)}
+                      className="text-blue-500 hover:underline"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(reply.id)}
+                      className="text-red-500 hover:underline"
+                    >
+                      <Trash size={14} />
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => setParentId(reply.id)}
+                  className="text-green-600"
+                  title="Reply"
+                >
+                  <MessageCircleReply size={14} />
+                </button>
               </div>
             </div>
 
             {editingReplyId === reply.id ? (
-              <div className="mt-2 space-y-2">
+              <div className="mt-2">
                 <textarea
-                  value={editedText}
-                  onChange={(e) => setEditedText(e.target.value)}
-                  className="w-full p-2 border rounded-md dark:bg-zinc-900"
+                  className="w-full p-1 rounded border dark:bg-black"
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
                 />
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-1">
                   <button
-                    onClick={() => handleEdit(reply.id)}
-                    className="text-sm bg-violet-600 text-white px-3 py-1 rounded-md"
+                    onClick={() => saveEdit(reply.id)}
+                    className="text-green-600 text-sm"
                   >
                     Save
                   </button>
                   <button
                     onClick={() => setEditingReplyId(null)}
-                    className="text-sm text-gray-600 dark:text-gray-300"
+                    className="text-gray-600 text-sm"
                   >
                     Cancel
                   </button>
                 </div>
               </div>
             ) : (
-              <p className="mt-2 text-gray-700 dark:text-gray-300">
-                {reply.text}
-              </p>
+              <p className="mt-1 text-sm">{reply.text}</p>
             )}
 
-            {canModify && editingReplyId !== reply.id && (
-              <div className="flex gap-3 mt-2 text-sm text-gray-500">
-                <button
-                  onClick={() => {
-                    setEditingReplyId(reply.id);
-                    setEditedText(reply.text);
-                  }}
-                >
-                  Edit
-                </button>
-                <button onClick={() => handleDelete(reply.id)}>Delete</button>
+            {children.length > 0 && (
+              <div className="mt-2 ml-2 text-xs text-gray-500">
+                {children.length} repl{children.length > 1 ? "ies" : "y"}
               </div>
             )}
+
+            {renderReplies(reply.id, depth + 1)}
           </motion.div>
         );
-      })}
+      });
 
-      {/* Reply input */}
-      {userId && userName && (
-        <div className="flex flex-col mt-4 gap-2">
-          <textarea
-            placeholder="Write a reply..."
-            value={newReply}
-            onChange={(e) => setNewReply(e.target.value)}
-            className="p-2 border rounded-md dark:bg-zinc-900"
-          />
-          <button
-            onClick={handleSubmit}
-            className="self-end bg-violet-600 hover:bg-violet-700 text-white px-4 py-1 rounded-md text-sm"
-          >
-            Reply
-          </button>
-        </div>
+  return (
+    <div className="mt-6">
+      <h4 className="text-lg font-semibold mb-2">Replies</h4>
+
+      {loading ? (
+        <p className="text-sm text-gray-500">Loading replies...</p>
+      ) : (
+        <AnimatePresence>{renderReplies()}</AnimatePresence>
       )}
+
+      <div className="mt-4">
+        <textarea
+          ref={replyInputRef}
+          value={replyText}
+          onChange={(e) => setReplyText(e.target.value)}
+          placeholder={parentId ? "Replying..." : "Write a reply..."}
+          className="w-full p-2 border rounded dark:bg-black"
+        />
+        <button
+          onClick={handleReply}
+          className="mt-2 px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Send Reply
+        </button>
+        {parentId && (
+          <button
+            onClick={() => setParentId(null)}
+            className="ml-2 mt-2 px-3 py-1 text-sm text-gray-600 hover:underline"
+          >
+            Cancel reply
+          </button>
+        )}
+      </div>
     </div>
   );
 }
