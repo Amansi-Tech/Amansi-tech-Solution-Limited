@@ -2,91 +2,41 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 html {
   scroll-behavior: smooth;
 }
-
-/* Background shimmer animation */
-@keyframes slide {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.animate-slide {
-  animation: slide 6s linear infinite;
-}
-
-
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0aff;
+    --background: #0a0a0a;
     --foreground: #ededed;
   }
 }
 
 body {
-  background:linear-gradient(rgba(114, 33, 219, 0.712),rgba(78, 42, 240, 0.66)) ;
-  background-size: contain;
+  @apply min-h-screen w-full;
+  background: linear-gradient(rgba(114, 33, 219, 0.7), rgba(78, 42, 240, 0.66));
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
 }
-@layer components {
-  .subheading {
-    @apply relative text-center text-2xl font-semibold text-violet-600 my-8 ;
+
+/* Animation Keyframes */
+@keyframes slide {
+  0% {
+    transform: translateX(-100%);
   }
-  /* lines on each side */
-  .subheading::before,
-  .subheading::after {
-    content: '';
-    @apply inline-block border-t-2 border-violet-500 flex-1 max-w-[150px] mx-4;
-  }
-  /* entrance fade-in & slight upward movement */
-  .subheading {
-    @apply opacity-1 translate-y-4 bg-violet-500 motion-safe:animate-[fadeInUp_0.8s_ease-out];
-  }
-  @keyframes fadeInUp {
-    to { opacity: 1; transform: translateY(0); }
-  }
-  /* hover animated underline using after-element */
-  .subheading.group:hover::after {
-    @apply border-violet-600;
-  }
-  .subheading.group::after {
-    @apply content-[''] absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-1 bg-gradient-to-r from-violet-400 to-violet-600 transition-all duration-500;
-  }
-  .subheading.group:hover::after {
-    @apply w-full;
-  }
-}
-@layer components {
-  .star-container {
-    /* Centered layout */
-  }
-  .star-wrapper {
-    @apply text-yellow-500 text-4xl inline-block;
-    animation: float-star 6s ease-in-out infinite;
-    display: inline-block;
-  }
-  .first-stars {
-    animation-delay: -0.5s;
-    animation-name: float-and-flip;
+  100% {
+    transform: translateX(100%);
   }
 }
 
@@ -108,3 +58,41 @@ body {
   }
 }
 
+/* Tailwind Layers */
+@layer components {
+  .subheading {
+    @apply relative text-center text-2xl font-semibold text-violet-600 my-8 opacity-1 translate-y-4 bg-violet-500 motion-safe:animate-[fadeInUp_0.8s_ease-out];
+  }
+
+  .subheading::before,
+  .subheading::after {
+    content: '';
+    @apply inline-block border-t-2 border-violet-500 flex-1 max-w-[150px] mx-4;
+  }
+
+  .subheading.group:hover::after {
+    @apply border-violet-600;
+  }
+
+  .subheading.group::after {
+    @apply content-[''] absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-1 bg-gradient-to-r from-violet-400 to-violet-600 transition-all duration-500;
+  }
+
+  .subheading.group:hover::after {
+    @apply w-full;
+  }
+
+  .star-wrapper {
+    @apply text-yellow-500 text-4xl inline-block;
+    animation: float-star 6s ease-in-out infinite;
+  }
+
+  .first-stars {
+    animation-delay: -0.5s;
+    animation-name: float-and-flip;
+  }
+
+  .animate-slide {
+    animation: slide 6s linear infinite;
+  }
+}

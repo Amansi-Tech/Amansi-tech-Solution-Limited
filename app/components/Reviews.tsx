@@ -1,243 +1,183 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { db, auth } from "../../lib/firebase";
+import { useEffect, useState, FormEvent } from "react";
 import {
   collection,
   addDoc,
-  getDocs,
+  doc,
   query,
   where,
-  doc,
   updateDoc,
+  onSnapshot,
   Timestamp,
 } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "../../lib/firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { toast } from "sonner";
-import { Star } from "lucide-react";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
+interface ReviewData {
+  id?: string;
+  uid: string;
+  name: string;
+  rating: number;
+  review: string;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
 export default function ReviewForm() {
-  const [user, setUser] = useState<any>(null);
-  const [reviewText, setReviewText] = useState("");
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState<number>(0);
+  const [review, setReview] = useState<string>("");
+  const [user, setUser] = useState<User | null>(null);
   const [existingReviewId, setExistingReviewId] = useState<string | null>(null);
-  const [hasTyped, setHasTyped] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        const q = query(
-          collection(db, "reviews"),
-          where("uid", "==", currentUser.uid)
-        );
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          const docData = snapshot.docs[0];
-          setReviewText(docData.data().text);
-          setRating(docData.data().rating);
-          setExistingReviewId(docData.id);
-        }
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-
+  // Prevent navigation if form is incomplete
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!existingReviewId && hasTyped) {
+      if (rating === 0 || review.trim() === "") {
         e.preventDefault();
         e.returnValue = "";
       }
     };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
-    return () =>
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [existingReviewId, hasTyped]);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [rating, review]);
 
-  const handleSubmit = async (e: any) => {
+  // Detect logged-in user and existing review
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+
+        const q = query(
+          collection(db, "reviews"),
+          where("uid", "==", currentUser.uid)
+        );
+
+        const unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+          if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            const data = doc.data() as ReviewData;
+            setExistingReviewId(doc.id);
+            setRating(data.rating);
+            setReview(data.review);
+          }
+        });
+
+        return () => unsubscribeSnapshot();
+      }
+    });
+
+    return () => unsubscribeAuth();
+  }, []);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!user) return;
-
-    if (reviewText.trim().length < 20) {
-      setError("Review must be at least 20 characters.");
+    if (!user) {
+      toast.error("You must be logged in to submit a review.");
       return;
     }
 
-    setError("");
-
-    const reviewData = {
-      uid: user.uid,
-      name: user.displayName || "Anonymous",
-      email: user.email,
-      text: reviewText.trim(),
-      rating,
-      createdAt: Timestamp.now(),
-    };
+    setIsSubmitting(true);
 
     try {
-      setLoading(true);
-
       if (existingReviewId) {
-        await updateDoc(doc(db, "reviews", existingReviewId), reviewData);
+        // Update existing review
+        await updateDoc(doc(db, "reviews", existingReviewId), {
+          rating,
+          review,
+          updatedAt: Timestamp.now(),
+        });
+        toast.success("Your review was updated successfully!");
       } else {
-        await addDoc(collection(db, "reviews"), reviewData);
+        // Add new review
+        await addDoc(collection(db, "reviews"), {
+          uid: user.uid,
+          name: user.displayName || "Anonymous",
+          rating,
+          review,
+          createdAt: Timestamp.now(),
+        });
+        toast.success("Review submitted successfully!");
       }
 
-      setHasTyped(false);
-      toast.success("Review submitted successfully!");
-
-      setTimeout(() => {
-        router.push("/reviews/feedback");
-      }, 1000);
-    } catch (err) {
-      toast.error("Failed to submit review.");
+      router.push("/reviews/feedback");
+    } catch (error) {
+      console.error("Review submission failed:", error);
+      toast.error("Something went wrong. Please try again.");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleCancel = () => {
-    setReviewText("");
-    setRating(5);
-    setHasTyped(false);
-    setError("");
-  };
-
-  if (!user) return null;
-
   return (
-    <motion.form
-      onSubmit={handleSubmit}
-      initial={{ opacity: 0, y: 40 }}
+    <motion.div
+      className="max-w-2xl mx-auto p-6 bg-white dark:bg-[#111] shadow-xl rounded-2xl"
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow max-w-xl mt-[2rem] mb-[2rem] space-y-4"
     >
-      {/* USER INFO */}
-      <motion.div
-        className="flex items-center gap-3"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        {user.photoURL ? (
-          <Image
-            src={user.photoURL}
-            alt="User Avatar"
-            width={40}
-            height={40}
-            className="rounded-full"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-sm text-white">
-            {user.displayName?.[0] || "U"}
-          </div>
-        )}
+      <h2 className="text-2xl font-bold text-violet-600 mb-4 text-center">
+        {existingReviewId ? "Update Your Review" : "Leave a Review"}
+      </h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Rating */}
         <div>
-          <p className="text-sm font-medium text-zinc-800 dark:text-white">
-            {user.displayName || "Anonymous"}
-          </p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {user.email}
-          </p>
+          <label className="block text-violet-700 font-semibold mb-2">
+            Star Rating:
+          </label>
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setRating(star)}
+                className={`text-3xl transition ${
+                  star <= rating ? "text-yellow-400" : "text-gray-300"
+                }`}
+              >
+                ★
+              </button>
+            ))}
+          </div>
         </div>
-      </motion.div>
 
-      {/* REVIEW INPUT */}
-      <textarea
-        required
-        minLength={20}
-        placeholder="Write at least 20 characters..."
-        value={reviewText}
-        onChange={(e) => {
-          setReviewText(e.target.value);
-          setHasTyped(true);
-          if (e.target.value.length >= 20) setError("");
-        }}
-        className="w-full border rounded p-2 text-black dark:text-white bg-white dark:bg-zinc-800"
-      />
-      {error && (
-        <p className="text-red-500 text-sm -mt-2">{error}</p>
-      )}
-
-      {/* STAR RATING */}
-      <div className="flex items-center space-x-2">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Star
-            key={i}
-            size={28}
-            onClick={() => {
-              setRating(i);
-              setHasTyped(true);
-            }}
-            className={`cursor-pointer transition-colors ${
-              i <= rating ? "text-yellow-400" : "text-gray-400"
-            }`}
+        {/* Review textarea */}
+        <div>
+          <label className="block text-violet-700 font-semibold mb-2">
+            Your Review:
+          </label>
+          <textarea
+            value={review}
+            onChange={(e) => setReview(e.target.value)}
+            placeholder="Write something great..."
+            className="w-full h-32 p-3 rounded-lg border border-violet-300 focus:ring-2 focus:ring-violet-500 focus:outline-none dark:bg-neutral-900 dark:text-white"
+            required
           />
-        ))}
-        <span className="ml-2 text-sm text-zinc-600 dark:text-zinc-300">
-          {rating} star{rating !== 1 && "s"}
-        </span>
-      </div>
+        </div>
 
-      {/* ACTION BUTTONS */}
-      <div className="flex items-center gap-4">
+        {/* Submit */}
         <button
           type="submit"
-          disabled={loading}
-          className={`bg-violet-600 text-white px-4 py-2 rounded hover:bg-violet-700 flex items-center justify-center ${
-            loading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+          disabled={isSubmitting}
+          className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-lg font-semibold w-full transition duration-200"
         >
-          {loading ? (
-            <>
-              <svg
-                className="animate-spin mr-2 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8z"
-                />
-              </svg>
-              Submitting...
-            </>
-          ) : existingReviewId ? (
-            "Update Review"
-          ) : (
-            "Submit Review"
-          )}
+          {isSubmitting
+            ? existingReviewId
+              ? "Updating..."
+              : "Submitting..."
+            : existingReviewId
+            ? "Update Review"
+            : "Submit Review"}
         </button>
-
-        {/* CANCEL BUTTON */}
-        {existingReviewId && !loading && (
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="text-sm text-zinc-600 hover:text-red-500"
-          >
-            Cancel
-          </button>
-        )}
-      </div>
-    </motion.form>
+      </form>
+    </motion.div>
   );
 }
+

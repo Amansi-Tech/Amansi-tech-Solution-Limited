@@ -1,3 +1,4 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter, Roboto_Mono, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -6,6 +7,7 @@ import Header from "./components/Header";
 import WelcomePopup from "./components/WelcomePopup";
 import Footer from "./components/Footer";
 import WhatsAppButton from "./components/Whatsappbutton";
+import ErrorPopup from "./components/ErrorPopup"; // ✅ Add this for toast-like error popups
 
 const inter = Inter({
   variable: "--font-inter",
@@ -48,9 +50,10 @@ export default function RootLayout({
       >
         <WelcomePopup />
         <Header />
-        <main>{children}</main>
+        <main className="px-4 sm:px-6 md:px-10 py-6">{children}</main>
         <WhatsAppButton />
         <Footer />
+        <ErrorPopup /> {/* 👈 Mount error card UI at root level */}
       </body>
     </html>
   );

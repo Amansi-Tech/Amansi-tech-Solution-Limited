@@ -1,32 +1,57 @@
 "use client";
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { useEffect, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
-interface Review {
-  stars: number;
-}
+type Review = {
+  rating: number;
+};
 
-interface Props {
-  reviews: Review[];
-}
+export function StarSummaryChart() {
+  const [starCounts, setStarCounts] = useState([
+    { rating: "1 Star", count: 0 },
+    { rating: "2 Stars", count: 0 },
+    { rating: "3 Stars", count: 0 },
+    { rating: "4 Stars", count: 0 },
+    { rating: "5 Stars", count: 0 },
+  ]);
 
-export const StarSummaryChart = ({ reviews }: Props) => {
-  const starCounts = [1, 2, 3, 4, 5].map((star) => ({
-    star,
-    count: reviews.filter((r) => r.stars === star).length,
-  }));
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "reviews"), (snapshot) => {
+      const counts = [0, 0, 0, 0, 0];
+      snapshot.forEach((doc) => {
+        const data = doc.data() as Review;
+        const rating = data.rating;
+        if (rating >= 1 && rating <= 5) {
+          counts[rating - 1]++;
+        }
+      });
+
+      setStarCounts([
+        { rating: "1 Star", count: counts[0] },
+        { rating: "2 Stars", count: counts[1] },
+        { rating: "3 Stars", count: counts[2] },
+        { rating: "4 Stars", count: counts[3] },
+        { rating: "5 Stars", count: counts[4] },
+      ]);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <div className="bg-white/10 p-4 rounded-2xl shadow-md mb-6">
-      <h2 className="text-lg font-semibold mb-4 text-white">Star Distribution</h2>
-      <ResponsiveContainer width="100%" height={200}>
+    <div className="w-full md:w-[600px] h-[300px] bg-white dark:bg-gray-900 rounded-xl p-4 shadow">
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart data={starCounts}>
-          <XAxis dataKey="star" stroke="#ccc" />
-          <YAxis stroke="#ccc" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
+          <XAxis dataKey="rating" stroke="#8884d8" />
+          <YAxis allowDecimals={false} />
           <Tooltip />
-          <Bar dataKey="count" fill="#a78bfa" />
+          <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
   );
-};
+}

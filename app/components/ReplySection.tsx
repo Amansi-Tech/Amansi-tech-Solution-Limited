@@ -1,23 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
-  addDoc,
   collection,
+  addDoc,
   onSnapshot,
   query,
+  orderBy,
   serverTimestamp,
   deleteDoc,
   doc,
   updateDoc,
-  orderBy,
 } from "firebase/firestore";
-
-import { db, auth } from "../../lib/firebase";
+import { db } from "../../lib/firebase";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Avatar } from "flowbite-react";
 import { motion } from "framer-motion";
-import { MessageCircle, Trash2, Pencil, Save, X, CornerDownRight } from "lucide-react";
+import { Trash2, Pencil, Send, CornerUpRight } from "lucide-react";
 
 type Reply = {
   id: string;
@@ -25,221 +23,216 @@ type Reply = {
   name: string;
   text: string;
   createdAt: any;
-  parentId?: string;
   edited?: boolean;
+  parentId?: string;
 };
 
-export default function ReplySection({
-  reviewId,
-  reviewAuthorUid,
-}: {
+type Props = {
   reviewId: string;
-  reviewAuthorUid: string;
-}) {
-  const [replies, setReplies] = useState<Reply[]>([]);
-  const [replyText, setReplyText] = useState("");
-  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
-  const [editedText, setEditedText] = useState("");
-  const [parentId, setParentId] = useState<string | null>(null);
+  userId?: string;
+  userName?: string;
+  adminUid: string;
+};
 
-  const currentUser = auth.currentUser;
-  const adminUid = "HE2BB7Eo0jUtQZqs7mhKqa4FM0t1";
+export default function ReplySection({ reviewId, userId, userName, adminUid }: Props) {
+  const [replies, setReplies] = useState<Reply[]>([]);
+  const [newReply, setNewReply] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
   useEffect(() => {
     const q = query(
       collection(db, "reviews", reviewId, "replies"),
       orderBy("createdAt", "asc")
     );
-    const unsub = onSnapshot(q, (snapshot) => {
-      const data: Reply[] = snapshot.docs.map((doc) => {
-        const replyData = doc.data() as Omit<Reply, "id">;
-        return {
-          id: doc.id,
-          ...replyData,
-        };
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const replyList: any = [];
+      snapshot.forEach((doc) => {
+        replyList.push({ id: doc.id, ...doc.data() });
       });
-      setReplies(data);
+      setReplies(replyList);
     });
-
-    return () => unsub();
+    return () => unsubscribe();
   }, [reviewId]);
 
   const handleReply = async () => {
-    if (!replyText.trim()) return;
+    if (!newReply.trim()) return;
+    if (!userId) return toast.error("You must be logged in to reply");
 
     try {
       await addDoc(collection(db, "reviews", reviewId, "replies"), {
-        uid: currentUser?.uid,
-        name: currentUser?.displayName || "Anonymous",
-        text: replyText,
+        uid: userId,
+        name: userName || "Anonymous",
+        text: newReply,
         createdAt: serverTimestamp(),
-        parentId: parentId || null,
-        edited: false,
+        parentId: replyingTo || null,
       });
+      setNewReply("");
+      setReplyingTo(null);
+    } catch (err) {
+      toast.error("Failed to post reply");
+    }
+  };
 
-      setReplyText("");
-      setParentId(null);
-      toast.success("Reply added!");
-    } catch (error) {
-      console.error("Error adding reply:", error);
-      toast.error("Failed to add reply.");
+  const handleEdit = async (id: string) => {
+    if (!editText.trim()) return;
+    try {
+      await updateDoc(doc(db, "reviews", reviewId, "replies", id), {
+        text: editText,
+        edited: true,
+      });
+      setEditingId(null);
+      toast.success("Reply updated");
+    } catch {
+      toast.error("Failed to update reply");
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await deleteDoc(doc(db, "reviews", reviewId, "replies", id));
-      toast.success("Reply deleted.");
-    } catch (error) {
-      console.error("Delete error:", error);
-      toast.error("Failed to delete reply.");
+      toast.success("Reply deleted");
+    } catch {
+      toast.error("Failed to delete reply");
     }
   };
 
-  const handleEdit = (id: string, text: string) => {
-    setEditingReplyId(id);
-    setEditedText(text);
-  };
+  const renderReplies = (parentId: string | null = null, level = 0) => {
+    return replies
+      .filter((r) => r.parentId === parentId)
+      .map((r) => {
+        const canModify = userId === r.uid || userId === adminUid;
 
-  const handleSaveEdit = async (id: string) => {
-    try {
-      await updateDoc(doc(db, "reviews", reviewId, "replies", id), {
-        text: editedText,
-        edited: true,
-      });
-      toast.success("Reply updated.");
-      setEditingReplyId(null);
-      setEditedText("");
-    } catch (error) {
-      console.error("Update error:", error);
-      toast.error("Failed to update reply.");
-    }
-  };
-
-  const renderReplies = (parent: string | null = null, level = 0) =>
-    replies
-      .filter((r) => r.parentId === parent)
-      .map((reply) => (
-        <motion.div
-          key={reply.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className={`ml-${level * 4} mt-3 p-3 rounded-xl bg-gray-800/40 border border-gray-600`}
-        >
-          <div className="flex items-start gap-2">
-            <Avatar
-              img={`https://api.dicebear.com/7.x/thumbs/svg?seed=${reply.uid}`}
-              rounded
-              size="sm"
-            />
-            <div className="w-full">
-              <div className="flex items-center justify-between text-sm text-gray-200">
-                <span className="font-medium">{reply.name}</span>
-                <span className="text-xs text-gray-400">
-                  {reply.createdAt?.seconds
-                    ? new Date(reply.createdAt.seconds * 1000).toLocaleString()
-                    : "Just now"}
-                  {reply.edited && <span className="ml-2 italic text-yellow-400">(edited)</span>}
-                </span>
+        return (
+          <motion.div
+            key={r.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className={`ml-${level * 4} mb-2 p-3 rounded-xl bg-white dark:bg-violet-950 shadow`}
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-violet-500 text-white flex items-center justify-center font-bold text-sm uppercase">
+                {r.name?.charAt(0)}
               </div>
-
-              {editingReplyId === reply.id ? (
-                <>
+              <div className="text-sm font-medium">{r.name}</div>
+              <span className="text-xs text-gray-500 ml-2">
+                {r.createdAt?.toDate?.().toLocaleString?.()}
+                {r.edited && " • edited"}
+              </span>
+            </div>
+            <div className="mt-2 text-sm text-gray-700 dark:text-gray-100">
+              {editingId === r.id ? (
+                <div className="flex flex-col gap-2">
                   <textarea
-                    value={editedText}
-                    onChange={(e) => setEditedText(e.target.value)}
-                    className="w-full mt-1 p-2 rounded bg-gray-700 text-white"
-                    rows={2}
+                    className="border p-2 rounded-md"
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
                   />
-                  <div className="flex justify-end gap-2 mt-1">
+                  <div className="flex gap-2">
                     <button
-                      onClick={() => handleSaveEdit(reply.id)}
-                      className="px-3 py-1 rounded text-green-400 bg-gray-700 hover:bg-gray-600"
+                      onClick={() => handleEdit(r.id)}
+                      className="px-3 py-1 rounded bg-violet-600 text-white text-sm"
                     >
-                      <Save className="h-4 w-4 inline mr-1" /> Save
+                      Save
                     </button>
                     <button
-                      onClick={() => setEditingReplyId(null)}
-                      className="px-3 py-1 rounded text-gray-400 bg-gray-700 hover:bg-gray-600"
+                      onClick={() => setEditingId(null)}
+                      className="px-3 py-1 rounded bg-gray-300 text-sm"
                     >
-                      <X className="h-4 w-4 inline mr-1" /> Cancel
+                      Cancel
                     </button>
                   </div>
-                </>
+                </div>
               ) : (
-                <p className="text-gray-100 mt-1">{reply.text}</p>
+                <p>{r.text}</p>
               )}
-
-              <div className="flex gap-3 mt-2 text-xs text-gray-400">
-                <button onClick={() => setParentId(reply.id)} className="hover:text-blue-400">
-                  <CornerDownRight className="inline w-3 h-3 mr-1" />
-                  Reply
-                </button>
-                {(currentUser?.uid === reply.uid || currentUser?.uid === adminUid) && (
-                  <>
-                    <button
-                      onClick={() => handleEdit(reply.id, reply.text)}
-                      className="hover:text-yellow-400"
-                    >
-                      <Pencil className="inline w-3 h-3 mr-1" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(reply.id)}
-                      className="hover:text-red-400"
-                    >
-                      <Trash2 className="inline w-3 h-3 mr-1" />
-                      Delete
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Render nested replies */}
-              {renderReplies(reply.id, level + 1)}
             </div>
-          </div>
-        </motion.div>
-      ));
+
+            <div className="flex gap-3 mt-2 text-xs">
+              {canModify && (
+                <>
+                  <button
+                    onClick={() => {
+                      setEditingId(r.id);
+                      setEditText(r.text);
+                    }}
+                    className="text-violet-500 flex items-center gap-1"
+                  >
+                    <Pencil size={14} /> Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(r.id)}
+                    className="text-red-500 flex items-center gap-1"
+                  >
+                    <Trash2 size={14} /> Delete
+                  </button>
+                </>
+              )}
+              {userId && (
+                <button
+                  onClick={() => setReplyingTo(r.id)}
+                  className="text-violet-700 flex items-center gap-1"
+                >
+                  <CornerUpRight size={14} /> Reply
+                </button>
+              )}
+            </div>
+
+            {/* Nested reply input */}
+            {replyingTo === r.id && (
+              <div className="mt-2 flex flex-col gap-2">
+                <textarea
+                  className="border p-2 rounded-md"
+                  placeholder="Write your reply..."
+                  value={newReply}
+                  onChange={(e) => setNewReply(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleReply}
+                    className="px-3 py-1 rounded bg-violet-700 text-white text-sm"
+                  >
+                    Reply <Send size={14} className="inline ml-1" />
+                  </button>
+                  <button
+                    onClick={() => setReplyingTo(null)}
+                    className="px-3 py-1 rounded bg-gray-300 text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {renderReplies(r.id, level + 1)}
+          </motion.div>
+        );
+      });
+  };
 
   return (
-    <div className="mt-6 space-y-4">
-      <div className="flex items-start gap-2">
-        <Avatar
-          img={`https://api.dicebear.com/7.x/thumbs/svg?seed=${currentUser?.uid || "guest"}`}
-          rounded
-          size="sm"
-        />
-        <div className="w-full">
-          <textarea
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            placeholder={parentId ? "Replying to a reply..." : "Write a reply..."}
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            rows={2}
-          />
-          <div className="flex justify-between mt-1">
-            <button
-              onClick={handleReply}
-              className="flex items-center px-3 py-1 rounded text-white bg-blue-600 hover:bg-blue-700"
-            >
-              <MessageCircle className="h-4 w-4 mr-1" />
-              Reply
-            </button>
-            {parentId && (
-              <button
-                onClick={() => setParentId(null)}
-                className="text-xs text-gray-400 hover:text-white"
-              >
-                Cancel replying
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="mt-6">
+      <h3 className="text-lg font-semibold mb-2 text-violet-700">Replies</h3>
 
-      <div>{renderReplies()}</div>
+      {userId && (
+        <div className="mb-4">
+          <textarea
+            className="w-full border p-2 rounded-md"
+            placeholder="Write a reply..."
+            value={newReply}
+            onChange={(e) => setNewReply(e.target.value)}
+          />
+          <button
+            onClick={handleReply}
+            className="mt-2 px-4 py-2 bg-violet-600 text-white rounded-md"
+          >
+            Post Reply
+          </button>
+        </div>
+      )}
+
+      {renderReplies()}
     </div>
   );
 }

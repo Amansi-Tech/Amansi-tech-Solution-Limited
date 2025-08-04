@@ -2,7 +2,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["lh3.googleusercontent.com"], // 👈 Add allowed domains here
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com", // for Google user avatars
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com", // for Unsplash images
+      },
+    ],
   },
 };
 

@@ -43,7 +43,7 @@ const repos = [
 
 export default function ProjectsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white px-4 py-20">
+    <section className="min-h-screen bg-gradient-to-br from-violet-50 to-white px-4 py-20">
       <div className="max-w-6xl mx-auto space-y-12 text-center">
         <motion.h1
           initial={{ opacity: 0, y: -30 }}
@@ -83,13 +83,19 @@ export default function ProjectsPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.05 }}
-                className="block bg-white rounded-xl shadow-lg p-6 h-full flex flex-col justify-between text-left"
+                className="block bg-white rounded-2xl shadow-lg p-6 h-full flex flex-col justify-between text-left hover:shadow-violet-200"
               >
                 <Code className="w-10 h-10 text-violet-600 mb-4" />
+
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800 mb-2">{repo.name}</h2>
-                  <p className="text-gray-600 text-sm mb-4">{repo.description}</p>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                    {repo.name}
+                  </h2>
+                  <p className="text-gray-600 text-sm mb-4">
+                    {repo.description}
+                  </p>
                 </div>
+
                 <div className="flex items-center justify-between text-sm text-violet-600 font-medium mt-auto">
                   <div className="flex items-center gap-1">
                     {[...Array(repo.stars)].map((_, idx) => (
@@ -113,6 +119,6 @@ export default function ProjectsPage() {
           ← Back to Home
         </Link>
       </div>
-    </div>
+    </section>
   );
 }

@@ -11,7 +11,7 @@ const Services = () => {
 
         <span className="absolute left-0 top-1/2 -translate-y-1/2 w-16 h-[2px] bg-violet-300"></span>
 
-        <h2 className="text-4xl font-extrabold text-white relative z-10">
+        <h2 className="text-4xl font-extrabold text-violet-600 relative z-10">
           Services
         </h2>
         <span className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-[2px] bg-violet-400"></span>
